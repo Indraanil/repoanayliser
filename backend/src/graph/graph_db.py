@@ -1,3 +1,4 @@
+
 from neo4j import GraphDatabase
 from typing import Dict, List, Optional, Any
 from pathlib import Path
@@ -22,10 +23,11 @@ class GraphDB:
         except Exception as e:
             logger.error(f"❌ Neo4j connection failed: {e}")
             logger.error("   Make sure Neo4j Desktop is running and database is started")
-            raise
+            self.driver = None
     
     def close(self):
-        self.driver.close()
+        if self.driver:
+            self.driver.close()
     
     def clear_database(self):
         with self.driver.session() as session:
@@ -1042,6 +1044,8 @@ class GraphDB:
     
     def get_graph_data(self, repo_id: str = None) -> Dict:
         """Get nodes and edges for graph visualization"""
+        if not self.driver:
+            return {'nodes': [], 'edges': []}
         with self.driver.session() as session:
             # Get file nodes and their relationships
             if repo_id:

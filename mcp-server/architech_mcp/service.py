@@ -11,7 +11,15 @@ from typing import Any
 from neo4j import GraphDatabase
 
 from .config import BACKEND_ROOT, MCP_ROOT, config
-from .utils import clamp, compact, ensure_inside, page, relative, source_excerpt
+from .utils import (
+    clamp,
+    compact,
+    ensure_inside,
+    extract_function_source,
+    page,
+    relative,
+    source_excerpt,
+)
 
 from src.parser.repository_filter import RepositoryFilter, is_obviously_ignored
 from src.graph.live_events import notify_web_backend
@@ -306,12 +314,12 @@ class ArchitechService:
             "content_hash": metadata.get("content_hash"),
             **data,
         }
-        if include_source:
-            result["source"] = source_excerpt(
-                absolute,
-                max_lines=clamp(max_source_lines, 1, config.max_source_lines),
-                max_chars=config.max_response_chars // 2,
-            )
+        # Always provide the relevant file source excerpt
+        result["source"] = source_excerpt(
+            absolute,
+            max_lines=clamp(max_source_lines, 1, config.max_source_lines),
+            max_chars=config.max_response_chars // 2,
+        )
         return compact(result)
 
     def function_context(
@@ -355,18 +363,29 @@ class ArchitechService:
             for item in result.get(field, []):
                 if item.get("name"):
                     item = dict(item)
-                    if item.get("file") and not RepositoryFilter(root).should_include(Path(item["file"])):
+                    caller_rel = item.get("file")
+                    if caller_rel and not RepositoryFilter(root).should_include(Path(caller_rel)):
                         continue
-                    item["file"] = relative(root, item.get("file"))
+                    item["file"] = relative(root, caller_rel)
+                    call_line = item.get("line")
+                    if caller_rel and call_line:
+                        try:
+                            caller_abs = root / item["file"]
+                            if caller_abs.is_file():
+                                c_lines = caller_abs.read_text(encoding="utf-8", errors="replace").splitlines()
+                                if 1 <= int(call_line) <= len(c_lines):
+                                    item["call_snippet"] = f"{call_line}: {c_lines[int(call_line) - 1].strip()}"
+                        except Exception:
+                            pass
                     cleaned.append(compact(item))
             result[field] = cleaned
-        if include_source:
-            result["source"] = source_excerpt(
-                absolute,
-                start_line=int(result.get("line") or 1),
-                max_lines=120,
-                max_chars=config.max_response_chars // 2,
-            )
+        # Always provide the relevant function source code
+        result["source"] = extract_function_source(
+            absolute,
+            start_line=int(result.get("line") or 1),
+            max_lines=120,
+            max_chars=config.max_response_chars // 2,
+        )
         return compact(result)
 
     def architecture(self, repo_id: str, include_components: bool, generate_if_missing: bool) -> dict[str, Any]:
@@ -581,11 +600,19 @@ class ArchitechService:
         except json.JSONDecodeError:
             raise RuntimeError("ARCHITECH backend returned an invalid response") from None
 
-    def change_impact(self, repo_id: str, file_path: str, change_type: str, depth: int, limit: int) -> dict[str, Any]:
+    def change_impact(
+        self,
+        repo_id: str,
+        file_path: str,
+        change_type: str,
+        depth: int,
+        limit: int,
+        include_source: bool = True,
+    ) -> dict[str, Any]:
         if change_type not in {"modify", "delete", "move"}:
             raise ValueError("change_type must be modify, delete, or move")
         root = self.repository_root(repo_id)
-        _, metadata = self._resolve_graph_file(repo_id, file_path)
+        absolute, metadata = self._resolve_graph_file(repo_id, file_path)
         hops = clamp(depth, 1, 3)
         cap = clamp(limit, 1, 100)
         upstream_query = f"""
@@ -638,7 +665,7 @@ class ArchitechService:
         multiplier = {"modify": 1.0, "move": 1.25, "delete": 1.5}[change_type]
         score = min(100, round(base * multiplier))
         level = "critical" if score >= 75 else "high" if score >= 50 else "medium" if score >= 20 else "low"
-        return {
+        result = {
             "file": relative(root, metadata["path"]),
             "change_type": change_type,
             "risk": {"score": score, "level": level},
@@ -658,6 +685,13 @@ class ArchitechService:
                 "reflection, runtime imports, and dynamically dispatched relationships."
             ),
         }
+        if include_source:
+            result["target_source"] = source_excerpt(
+                absolute,
+                max_lines=60,
+                max_chars=config.max_response_chars // 3,
+            )
+        return compact(result)
 
     def code_health(self, repo_id: str, category: str, cursor: str | None, limit: int) -> dict[str, Any]:
         root = self.repository_root(repo_id)

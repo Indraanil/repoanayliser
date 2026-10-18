@@ -59,6 +59,18 @@ class StateStore:
                 );
                 CREATE INDEX IF NOT EXISTS idx_checkpoint_repo
                     ON checkpoints(repo_id, id DESC);
+                CREATE TABLE IF NOT EXISTS activity_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    tool_name TEXT NOT NULL,
+                    repo_id TEXT,
+                    target TEXT,
+                    details TEXT,
+                    tokens_saved INTEGER,
+                    latency_ms REAL
+                );
+                CREATE INDEX IF NOT EXISTS idx_activity_time
+                    ON activity_log(id DESC);
                 """
             )
 
@@ -143,3 +155,37 @@ class StateStore:
                 "SELECT count(*) FROM checkpoints WHERE repo_id=?", (repo_id,)
             ).fetchone()[0]
         return {"cached_files": file_count, "ephemeral_checkpoints": checkpoint_count}
+
+    def record_activity(
+        self,
+        tool_name: str,
+        repo_id: str | None = None,
+        target: str | None = None,
+        details: str | None = None,
+        tokens_saved: int = 0,
+        latency_ms: float = 0.0,
+    ) -> None:
+        with self.connection() as db:
+            db.execute(
+                """
+                INSERT INTO activity_log (timestamp, tool_name, repo_id, target, details, tokens_saved, latency_ms)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (self._now(), tool_name, repo_id, target, details, tokens_saved, latency_ms),
+            )
+            db.execute(
+                """DELETE FROM activity_log WHERE id NOT IN (
+                       SELECT id FROM activity_log ORDER BY id DESC LIMIT 200
+                   )"""
+            )
+
+    def recent_activity(self, limit: int = 50) -> list[dict[str, Any]]:
+        with self.connection() as db:
+            cursor = db.execute(
+                """
+                SELECT id, timestamp, tool_name, repo_id, target, details, tokens_saved, latency_ms
+                FROM activity_log ORDER BY id DESC LIMIT ?
+                """,
+                (limit,),
+            )
+            return [dict(row) for row in cursor.fetchall()]

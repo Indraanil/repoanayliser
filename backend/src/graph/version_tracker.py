@@ -16,6 +16,9 @@ class VersionTracker:
     
     def _init_constraints(self):
         """Create Neo4j constraints for data integrity"""
+        if not self.graph_db or not getattr(self.graph_db, 'driver', None):
+            logger.warning("Neo4j driver not connected; skipping constraint initialization.")
+            return
         with self.graph_db.driver.session() as session:
             constraints = [
                 "CREATE CONSTRAINT unique_repo IF NOT EXISTS FOR (r:Repository) REQUIRE r.repo_id IS UNIQUE",
@@ -572,6 +575,8 @@ class VersionTracker:
     
     def list_repositories(self) -> List[Dict]:
         """List all analyzed repositories with snapshot count"""
+        if not self.graph_db or not getattr(self.graph_db, 'driver', None):
+            return []
         with self.graph_db.driver.session() as session:
             result = session.run("""
                 MATCH (r:Repository)

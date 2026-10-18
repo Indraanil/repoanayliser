@@ -30,23 +30,28 @@ build/
 **/*.key
 !**/*.key.example
 
-# Databases
+# Databases & State
 backend/chroma_db/
 chroma_db/
 *.sqlite3
 *.db
 neo4j/
+.data/
 
-# IDE
+# IDE & Agents
 .vscode/
 .idea/
+.agents/
 *.swp
 *.swo
 
-# Workspace
+# Workspace & Temp
 backend/workspace/
 workspace/
 repos/
+scratch/
+graphify-out/
+assets/
 
 # Logs
 *.log
@@ -55,7 +60,6 @@ logs/
 # Temporary files
 *.tmp
 *.bak
-*.swp
 *~
 
 # Test outputs
@@ -64,9 +68,10 @@ test_output/
 
 # OS
 .DS_Store
+Thumbs.db
 Thums.db
 
-# Node modules (frontend)
+# Node modules & build (frontend)
 frontend/node_modules/
 frontend/build/
 frontend/package-lock.json
@@ -92,7 +97,32 @@ htmlcov/
 # Documentation builds
 docs/_build/
 site/
-*.md
 
-#images
+# Media: Audio, Video & Images
+*.wav
+*.mp3
+*.ogg
+*.m4a
+*.flac
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
 *.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bmp
+*.ico
+*.tiff
+
+# Data & JSON files (caches, AST dumps, graph exports)
+*.json
+!package.json
+!frontend/package.json
+
+# Documentation: Only single root README.md
+*.md
+!README.md

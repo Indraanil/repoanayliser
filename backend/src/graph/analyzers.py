@@ -738,8 +738,13 @@ class CouplingAnalyzer:
     
     def _detect_cycles(self) -> List[List[str]]:
         try:
-            return list(nx.simple_cycles(self.graph))
-        except:
+            cycles = []
+            for cycle in nx.simple_cycles(self.graph):
+                cycles.append(cycle)
+                if len(cycles) >= 50:
+                    break
+            return cycles
+        except Exception:
             return []
     
     def _calculate_metrics(self) -> Dict:
