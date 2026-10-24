@@ -8,7 +8,7 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, List
 import uuid
 from src.analysis_engine import AnalysisEngine
@@ -41,6 +41,10 @@ class SearchRequest(BaseModel):
     mode: str = "hybrid"  # "hybrid", "dense", "sparse", "graph_rag"
     top_k: int = 10
     context_file: str | None = None
+
+class ChatRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=2000)
+    repo_id: str | None = None
 
 def run_analysis(job_id: str, repo_url: str):
     try:
@@ -622,6 +626,14 @@ async def get_function_call_chain(
 
 
 # --- Qdrant Vector DB & Graph RAG Retrieval Endpoints ---
+@app.post("/chat")
+def chat_with_project(request: ChatRequest):
+    """Answer a guarded developer question using Graph RAG repository evidence."""
+    return engine.answer_project_question(
+        query=request.query,
+        repo_id=request.repo_id,
+    )
+
 @app.post("/retrieval/search")
 async def semantic_search(request: SearchRequest):
     """Hybrid semantic retrieval with Hugging Face 768-dim embeddings + Qdrant Graph RAG."""
