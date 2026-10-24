@@ -13,6 +13,7 @@ import BlastRadius from './components/BlastRadius';
 import CodeHealth from './components/CodeHealth';
 import WorkflowExplorer from './components/WorkflowExplorer';
 import CinematicStory from './components/cinematic/CinematicStory';
+import ChatAssistant from './components/ChatAssistant';
 
 const repositoryLabel = (result, source) => {
   const explicit = result?.repo_name || result?.repository_name || result?.name;
@@ -171,6 +172,11 @@ function App() {
         </div>
       </main>
 
+      <ChatAssistant
+        key={currentRepoId || 'no-repository'}
+        repoId={currentRepoId}
+        repoName={currentRepoName}
+      />
 
     </div>
   );

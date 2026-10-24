@@ -751,6 +751,7 @@ python server.py
 | **Functions** | `GET` | `/function/{name}` | Returns callers, implementation code, and LLM explanation. |
 | **Workflows** | `GET` | `/workflows` | Discovers candidate workflow entrypoints across the repository. |
 | **Workflows** | `GET` | `/workflow/{entrypoint}` | Traces execution pipeline down to data sinks with sequence & flowcharts. |
+| **Project Chat** | `POST` | `/chat` | Answers project/code questions with Graph RAG evidence; a lightweight scope guard rejects unrelated prompts. |
 | **Code Health**| `GET` | `/code-health` | Evidence-backed candidates for unused files, uncalled functions, and duplicates. |
 | **Repositories**| `GET` | `/repositories` | Lists all analyzed repositories with snapshot and file counts. |
 | **Repositories**| `POST`| `/repository/{id}/load` | Loads a repository's cached analysis state into memory. |
@@ -769,7 +770,8 @@ python server.py
 | **Telemetry** | `GET` | `/api/mcp/activity` | Returns recent AI MCP tool activity and token savings telemetry. |
 | **Telemetry** | `POST`| `/api/live-events` | Ingests real-time file-save events from MCP watchdog into HUD. |
 | **Telemetry** | `GET` | `/api/mcp/inspect` | Inspects file source code and AST symbols via MCP service. |
-| **Telemetry** | `POST`| `/api/mcp/demo-call` | Generates a simulated MCP tool execution event for showcase purposes. |
+
+The `/chat` endpoint accepts `{"query": "...", "repo_id": "..."}`. Queries are limited to 2,000 characters. Responses include the guardrail decision and the repository files used as sources.
 
 ---
 
