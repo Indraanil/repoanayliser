@@ -11,6 +11,7 @@ const STARTER_QUESTIONS = [
 
 export default function ChatAssistant({ repoId, repoName }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([
@@ -66,20 +67,31 @@ export default function ChatAssistant({ repoId, repoName }) {
   return (
     <div className="chat-assistant">
       {isOpen && (
-        <section className="chat-panel" role="dialog" aria-label="Project code assistant">
+        <section className={`chat-panel${isExpanded ? ' chat-panel-expanded' : ''}`} role="dialog" aria-label="Project code assistant">
           <header className="chat-header">
             <div>
               <div className="chat-title"><span className="chat-status-dot" />Project assistant</div>
               <div className="chat-repository">{repoName || 'No repository selected'}</div>
             </div>
-            <button
-              type="button"
-              className="chat-close"
-              aria-label="Close project assistant"
-              onClick={() => setIsOpen(false)}
-            >
-              ×
-            </button>
+            <div className="chat-header-actions">
+              <button
+                type="button"
+                className="chat-action-btn"
+                aria-label={isExpanded ? 'Collapse panel' : 'Expand panel'}
+                title={isExpanded ? 'Collapse panel' : 'Expand panel'}
+                onClick={() => setIsExpanded(expanded => !expanded)}
+              >
+                {isExpanded ? '↙' : '↗'}
+              </button>
+              <button
+                type="button"
+                className="chat-close"
+                aria-label="Close project assistant"
+                onClick={() => setIsOpen(false)}
+              >
+                ×
+              </button>
+            </div>
           </header>
 
           <div className="chat-message-list" ref={messageListRef} aria-live="polite">

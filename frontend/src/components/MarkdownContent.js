@@ -117,7 +117,7 @@ export default function MarkdownContent({ children, className }) {
           ul: props => <ul style={styles.list} {...props} />,
           ol: props => <ol style={styles.list} {...props} />,
           li: props => <li style={styles.listItem} {...props} />,
-          table: props => <div style={styles.tableWrap}><table style={styles.table} {...props} /></div>,
+          table: props => <div className="markdown-table-wrap" style={styles.tableWrap}><table className="markdown-table" style={styles.table} {...props} /></div>,
           th: props => <th style={styles.th} {...props} />,
           td: props => <td style={styles.td} {...props} />,
           blockquote: props => <blockquote style={styles.blockquote} {...props} />,
@@ -150,13 +150,13 @@ const styles = {
   paragraph: { margin: '0 0 10px', lineHeight: 1.75 },
   list: { margin: '0 0 12px', paddingLeft: '24px' },
   listItem: { marginBottom: '5px', lineHeight: 1.65 },
-  tableWrap: { overflowX: 'auto', margin: '12px 0 18px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '12px' },
-  th: { padding: '9px 11px', textAlign: 'left', background: 'var(--bg-elevated)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border)' },
-  td: { padding: '9px 11px', verticalAlign: 'top', borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' },
+  tableWrap: { overflowX: 'auto', margin: '12px 0 18px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', maxWidth: '100%' },
+  table: { width: '100%', minWidth: 'max-content', borderCollapse: 'collapse', fontSize: '12px', lineHeight: 1.5 },
+  th: { padding: '8px 12px', textAlign: 'left', background: 'var(--bg-elevated)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap', fontWeight: 600 },
+  td: { padding: '8px 12px', verticalAlign: 'top', borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)', lineHeight: 1.5 },
   blockquote: { margin: '12px 0', padding: '4px 14px', borderLeft: '3px solid var(--text-muted)', color: 'var(--text-muted)' },
   hr: { border: 0, borderTop: '1px solid var(--border)', margin: '18px 0' },
   pre: { margin: 0, padding: '14px', overflowX: 'auto', background: 'transparent', border: 0, borderRadius: 0, lineHeight: 1.65 },
   code: { display: 'block', fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#d4d4d8', whiteSpace: 'pre' },
-  inlineCode: { padding: '2px 5px', background: 'var(--bg-elevated)', borderRadius: '4px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-primary)' }
+  inlineCode: { padding: '2px 5px', background: 'var(--bg-elevated)', borderRadius: '4px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-primary)', wordBreak: 'break-word', overflowWrap: 'break-word' }
 };
