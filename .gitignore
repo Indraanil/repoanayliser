@@ -30,13 +30,25 @@ build/
 **/*.key
 !**/*.key.example
 
-# Databases & State
+# Databases, Vector Stores & State
 backend/chroma_db/
 chroma_db/
+*.sqlite
 *.sqlite3
+*.sqlite-shm
+*.sqlite-wal
 *.db
 neo4j/
 .data/
+**/.data/
+**/qdrant/
+qdrant_storage/
+*.lock
+.cache/
+**/.cache/
+.fastembed/
+**/fastembed_cache/
+.huggingface/
 
 # IDE & Agents
 .vscode/

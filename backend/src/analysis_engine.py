@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Any, Set
 import logging
 import hashlib
 import subprocess
@@ -15,6 +15,7 @@ from .graph.version_tracker import VersionTracker
 from .graph.blast_radius import BlastRadiusAnalyzer
 from .retrieval.graphify_retriever import GraphifyRetriever
 from .retrieval.retrieval_engine import RetrievalEngine
+from .retrieval.graph_rag import GraphRAGEngine
 from .reasoning.llm_reasoner import LLMReasoner
 from .config import settings
 
@@ -50,7 +51,8 @@ class AnalysisEngine:
         )
         self.dependency_mapper = DependencyMapper()
         self.graphify = GraphifyRetriever()
-        self.retrieval_engine = RetrievalEngine(self.graphify, self.graph_db)
+        self.graph_rag = GraphRAGEngine(graph_db=self.graph_db)
+        self.retrieval_engine = RetrievalEngine(self.graphify, self.graph_db, self.graph_rag)
         self.llm = LLMReasoner()
         self.version_tracker = VersionTracker(self.graph_db)
         self.pattern_detector = None
@@ -407,6 +409,20 @@ class AnalysisEngine:
                     cycle_count=metrics['cycle_count']
                 )
         
+        # Index codebase into Qdrant for Graph RAG with Hugging Face 768-dim embeddings + BM25
+        logger.info("🧠 Indexing codebase into Qdrant for Graph RAG (768-dim Hugging Face + BM25)...")
+        try:
+            nx_graph = self.dependency_mapper.graph if self.dependency_mapper else None
+            indexed_count = self.graph_rag.index_codebase(
+                repo_id=self.current_repo_id,
+                parsed_files=parsed_files,
+                dependency_graph=nx_graph,
+                coupling_metrics=coupling
+            )
+            logger.info(f"   ✅ Indexed {indexed_count} entities into Qdrant collection '{self.graph_rag.qdrant.collection_name}'")
+        except Exception as e:
+            logger.warning(f"   ⚠️ Qdrant Graph RAG indexing warning: {e}")
+
         # Generate architecture explanation with LLM and cache
         logger.info("🤖 Generating architecture explanation with LLM...")
         arch_explanation = self._generate_and_cache_architecture()
@@ -466,6 +482,15 @@ class AnalysisEngine:
                 
                 # Rebuild dependency graph from stored data (with imports & dependencies)
                 self._rebuild_from_cache(repo_id)
+                
+                # Ensure Qdrant has vectors indexed for this repository
+                try:
+                    qdrant_points = self.graph_rag.qdrant.count_points(repo_id)
+                    if qdrant_points == 0 and self.repo_path and self.repo_path.exists():
+                        logger.info(f"🧠 Indexing Qdrant vectors for loaded repo {repo_id[:8]}...")
+                        self.reindex_qdrant(repo_id)
+                except Exception as q_err:
+                    logger.debug(f"Auto-index Qdrant on load info: {q_err}")
                 
                 logger.info(f"✅ Loaded analysis for repo {repo_id}")
                 return True
@@ -631,9 +656,12 @@ class AnalysisEngine:
         # Build graph context for LLM
         graph_context = self._build_graph_context(graph_data, all_files)
         
-        # Retrieve evidence from Graphify knowledge graph
+        # Retrieve evidence from Qdrant Graph RAG knowledge base
         evidence = self.retrieval_engine.retrieve_evidence(
-            "system architecture patterns modules structure"
+            "system architecture patterns modules structure entrypoint core components",
+            repo_id=self.current_repo_id,
+            mode="graph_rag",
+            top_k=8
         )
         
         # Build Graphify structural context string for LLM
@@ -885,6 +913,17 @@ class AnalysisEngine:
         self.pattern_detector = PatternDetector(self.dependency_mapper.graph)
         self.coupling_analyzer = CouplingAnalyzer(self.dependency_mapper.graph)
         self.blast_radius_analyzer = BlastRadiusAnalyzer(self.dependency_mapper, self.graph_db)
+
+        # Verify Qdrant vector embeddings are cached and up-to-date for this repo
+        try:
+            qdrant_points = self.graph_rag.qdrant.count_points(repo_id)
+            if qdrant_points == 0:
+                logger.info(f"🧠 Syncing Qdrant vector embeddings for cached repo {repo_id[:8]}...")
+                self.reindex_qdrant(repo_id)
+            else:
+                logger.info(f"✅ Qdrant vector embeddings up-to-date ({qdrant_points} points cached for repo {repo_id[:8]})")
+        except Exception as e:
+            logger.debug(f"Qdrant sync check info: {e}")
     
     def _get_cached_architecture(self, repo_id: str, commit_hash: str) -> Dict:
         """Retrieve cached architecture explanation from snapshot"""
@@ -985,10 +1024,10 @@ class AnalysisEngine:
         risk_score = result.get('risk_score', 0)
         
         try:
-            # Get Graphify file-level context (actual functions/classes in the file)
-            graphify_file_ctx = None
-            if self.graphify.is_available:
-                graphify_file_ctx = self.graphify.get_path_context(file_path)
+            # Get structural and semantic file context (Qdrant Graph RAG + Graphify)
+            graphify_file_ctx = self.retrieval_engine.retrieve_file_context(
+                file_path, repo_id=self.current_repo_id
+            )
 
             explanation = self.llm.explain_impact_with_graph(
                 file_path=file_path,
@@ -1058,9 +1097,26 @@ class AnalysisEngine:
                 'line': c.get('line', 0)
             })
         
-        # Get structural context from Graphify (replaces ChromaDB vector search)
+        # Get semantic & graph context from Qdrant Graph RAG (768-dim dense + BM25 sparse + graph neighbors)
         search_results = []
-        if self.graphify.is_available:
+        try:
+            rag_ev = self.retrieval_engine.retrieve_evidence(
+                query=f"{function_name} callers callees {Path(resolved_file_path or '').name}",
+                context_file=resolved_file_path,
+                repo_id=active_repo_id,
+                mode="graph_rag",
+                top_k=4
+            )
+            for item in rag_ev.get("evidence", []):
+                search_results.append({
+                    "code": item.get("code", f"function: {item.get('name')}"),
+                    "metadata": {"file_path": item.get("file", resolved_file_path or "")},
+                })
+        except Exception:
+            pass
+
+        # Fallback to Graphify if Qdrant has no points yet
+        if not search_results and self.graphify.is_available:
             file_ctx = self.graphify.get_path_context(resolved_file_path or "")
             # Convert to format expected by llm.explain_function
             for fn_name in file_ctx.get("functions", [])[:3]:
@@ -1255,7 +1311,11 @@ class AnalysisEngine:
                 OPTIONAL MATCH (f)-[:CONTAINS]->(fn:Function)
                 DETACH DELETE f, c, fn
                 """)
-        # ChromaDB removed - Graphify handles context indexing
+        # Clean up Qdrant vector points for this repo
+        try:
+            self.graph_rag.qdrant.delete_repo(repo_id)
+        except Exception as e:
+            logger.debug(f"Qdrant repo deletion info: {e}")
     
     def compare_snapshots(self, repo_id: str, snapshot1: str, snapshot2: str) -> Dict:
         """Compare two snapshots with cached architecture, coupling, and dependencies"""
@@ -1731,3 +1791,78 @@ class AnalysisEngine:
             edges, repo_id=self.current_repo_id
         )
         logger.info(f"   ✅ Stored {edge_count} DEPENDS_ON relationships in Neo4j")
+
+    def search_codebase(
+        self,
+        query: str,
+        repo_id: Optional[str] = None,
+        top_k: int = 10,
+        mode: str = "hybrid",
+        context_file: Optional[str] = None,
+    ) -> Dict:
+        """Execute semantic search with 768-dim Hugging Face model + Qdrant Graph RAG."""
+        active_repo = repo_id or self.current_repo_id
+        if not active_repo:
+            repos = self.version_tracker.list_repositories()
+            if repos:
+                active_repo = repos[0]["repo_id"]
+                self.load_repository_analysis(active_repo)
+
+        return self.graph_rag.retrieve(
+            query=query,
+            repo_id=active_repo,
+            context_file=context_file,
+            top_k=top_k,
+            mode=mode,
+        )
+
+    def reindex_qdrant(self, repo_id: Optional[str] = None) -> Dict:
+        """Index or re-index the repository into Qdrant using 768-dim embeddings + BM25."""
+        active_repo = repo_id or self.current_repo_id
+        if not active_repo:
+            repos = self.version_tracker.list_repositories()
+            if repos:
+                active_repo = repos[0]["repo_id"]
+                self.load_repository_analysis(active_repo)
+
+        if not active_repo:
+            return {"error": "No repository active"}
+
+        if not self.repo_path or not Path(self.repo_path).exists():
+            # Try to resolve path from version_tracker
+            repos = self.version_tracker.list_repositories()
+            matched = next((r for r in repos if r["repo_id"] == active_repo), None)
+            if matched and matched.get("path"):
+                self.repo_path = Path(matched["path"])
+
+        if not self.repo_path or not Path(self.repo_path).exists():
+            return {"error": f"Repository path for {active_repo} not found on disk"}
+
+        files = self.repo_loader.scan_files(
+            self.repo_path,
+            [".py", ".js", ".jsx", ".ts", ".tsx", ".java"]
+        )
+
+        parsed_files = []
+        for file_info in files:
+            parsed = self.parser.parse_file(file_info["path"], file_info["language"])
+            if parsed:
+                parsed_files.append(parsed)
+
+        nx_graph = self.dependency_mapper.graph if self.dependency_mapper else None
+        coupling = self.coupling_analyzer.analyze() if self.coupling_analyzer else {}
+
+        count = self.graph_rag.index_codebase(
+            repo_id=active_repo,
+            parsed_files=parsed_files,
+            dependency_graph=nx_graph,
+            coupling_metrics=coupling,
+        )
+
+        status_info = self.graph_rag.qdrant.get_status()
+        return {
+            "status": "success",
+            "repo_id": active_repo,
+            "indexed_count": count,
+            "qdrant": status_info,
+        }

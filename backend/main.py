@@ -35,6 +35,13 @@ class ImpactRequest(BaseModel):
     file_path: str
     change_type: str = "modify"  # "delete", "modify", or "move"
 
+class SearchRequest(BaseModel):
+    query: str
+    repo_id: str | None = None
+    mode: str = "hybrid"  # "hybrid", "dense", "sparse", "graph_rag"
+    top_k: int = 10
+    context_file: str | None = None
+
 def run_analysis(job_id: str, repo_url: str):
     try:
         result = engine.analyze_repository(repo_url)
@@ -440,6 +447,12 @@ async def delete_repository(repo_id: str):
         for k in keys_to_delete:
             del engine.memory_cache[k]
     
+    # Delete from Qdrant vector store
+    try:
+        engine.graph_rag.qdrant.delete_repo(repo_id)
+    except Exception:
+        pass
+    
     return {"status": "success", "message": f"Repository {repo_id} deleted", "counts": counts}
 
 @app.get("/files")
@@ -606,6 +619,46 @@ async def get_function_call_chain(
         function_name, repo_id=repo_id, file_path=file_path, depth=3
     )
     return graph_data
+
+
+# --- Qdrant Vector DB & Graph RAG Retrieval Endpoints ---
+@app.post("/retrieval/search")
+async def semantic_search(request: SearchRequest):
+    """Hybrid semantic retrieval with Hugging Face 768-dim embeddings + Qdrant Graph RAG."""
+    return engine.search_codebase(
+        query=request.query,
+        repo_id=request.repo_id,
+        top_k=request.top_k,
+        mode=request.mode,
+        context_file=request.context_file
+    )
+
+@app.get("/retrieval/search")
+async def semantic_search_get(
+    query: str,
+    repo_id: str | None = None,
+    mode: str = "hybrid",
+    top_k: int = 10,
+    context_file: str | None = None
+):
+    """GET endpoint for semantic search and Graph RAG exploration."""
+    return engine.search_codebase(
+        query=query,
+        repo_id=repo_id,
+        top_k=top_k,
+        mode=mode,
+        context_file=context_file
+    )
+
+@app.get("/retrieval/status")
+async def get_retrieval_status():
+    """Get Qdrant status, 768-dim model info, and collection statistics."""
+    return engine.graph_rag.qdrant.get_status()
+
+@app.post("/retrieval/reindex")
+async def reindex_retrieval(repo_id: str | None = None):
+    """Index or re-index active codebase into Qdrant vector database."""
+    return engine.reindex_qdrant(repo_id=repo_id)
 
 
 # --- MCP Live Inspector & Knowledge Graph HUD ---
