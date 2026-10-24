@@ -3,6 +3,7 @@ import { api } from '../services/api';
 import Highlighter from './Highlighter';
 import SearchableTreeSelect from './SearchableTreeSelect';
 import * as d3 from 'd3';
+import { formatFilePath } from '../utils/formatters';
 
 export default function BlastRadius({ repoId }) {
   const [filePath, setFilePath] = useState('');
@@ -49,15 +50,10 @@ export default function BlastRadius({ repoId }) {
     const width = 800, height = 400;
     svg.attr('width', width).attr('height', height);
 
-    const getFileName = (path) => {
-      const parts = path.split(/[/\\]/);
-      return parts.length >= 2 ? `${parts[parts.length - 2]}/${parts[parts.length - 1]}` : parts[parts.length - 1];
-    };
-
     const nodes = [
-      { id: 'target', label: getFileName(data.file), type: 'target' },
-      ...data.direct_dependents.map(f => ({ id: f, label: getFileName(f), type: 'direct' })),
-      ...data.indirect_dependents.slice(0, 10).map(f => ({ id: f, label: getFileName(f), type: 'indirect' }))
+      { id: 'target', label: formatFilePath(data.file, 2), type: 'target' },
+      ...data.direct_dependents.map(f => ({ id: f, label: formatFilePath(f, 2), type: 'direct' })),
+      ...data.indirect_dependents.slice(0, 10).map(f => ({ id: f, label: formatFilePath(f, 2), type: 'indirect' }))
     ];
     const links = [
       ...data.direct_dependents.map(f => ({ source: f, target: 'target' })),

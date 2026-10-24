@@ -1,0 +1,499 @@
+/* ==========================================================================
+   ARCHITECH — Cinematic Story & Editorial Motion Design System
+   Aesthetic: Architectural drafting, technical illustration, editorial motion.
+   Restrained Palette: Matte Graphite (#0c0d0e), Paper White (#f4f4f5), 
+   Charcoal (#27272a), Technical Slate (#52525b), Architectural Terracotta (#f97316).
+   Zero generic neon cyan, zero purple cosmic gradients, zero random glassmorphism.
+   ========================================================================== */
+
+.cinematic-container {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 140px);
+  height: 820px;
+  background: #090a0c;
+  color: #f4f4f5;
+  font-family: var(--font-sans);
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid #27272a;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  user-select: none;
+}
+
+/* Technical Drafting Grid */
+.cinematic-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+/* Vignette with subtle paper texture */
+.cinematic-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, transparent 40%, rgba(9, 10, 12, 0.75) 100%);
+  pointer-events: none;
+}
+
+/* 3D Perspective Viewport */
+.cinematic-stage {
+  position: absolute;
+  inset: 0;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 3D Camera Rig */
+.cinematic-camera {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* Floating Code Windows */
+.code-panel {
+  position: absolute;
+  background: rgba(18, 19, 23, 0.94);
+  border: 1px solid #333338;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  transition: all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+.code-panel.highlighted {
+  border-color: #f97316;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px #f97316;
+}
+
+.code-panel-header {
+  height: 28px;
+  background: #141518;
+  border-bottom: 1px solid #27272a;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  justify-content: space-between;
+}
+
+.code-panel-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.code-panel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3f3f46;
+}
+
+.code-panel-title {
+  font-size: 11px;
+  color: #a1a1aa;
+  letter-spacing: 0.5px;
+}
+
+.code-panel-lang {
+  font-size: 10px;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.code-panel-body {
+  padding: 12px 14px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #d4d4d8;
+  overflow: hidden;
+}
+
+.code-line {
+  display: flex;
+  align-items: baseline;
+  white-space: pre;
+}
+
+.code-line-num {
+  color: #52525b;
+  width: 24px;
+  user-select: none;
+  font-size: 10px;
+}
+
+.kw { color: #f97316; font-weight: 500; }
+.fn { color: #e4e4e7; font-weight: 500; }
+.str { color: #a1a1aa; }
+.comment { color: #52525b; font-style: italic; }
+.type { color: #d4d4d8; }
+.op { color: #71717a; }
+
+/* SVG Canvas for Lines and Stickman */
+.cinematic-svg-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Kinetic Typography Overlays */
+.kinetic-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  pointer-events: none;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.kinetic-statement {
+  font-size: clamp(24px, 3.4vw, 42px);
+  font-weight: 600;
+  color: #f4f4f5;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  max-width: 900px;
+  text-wrap: balance;
+  margin-bottom: 16px;
+  transform-origin: center;
+}
+
+.kinetic-sub {
+  font-size: clamp(14px, 1.4vw, 17px);
+  color: #a1a1aa;
+  max-width: 650px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.kinetic-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: #f97316;
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+/* Stickman Visuals */
+.stickman-group {
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+/* Player Navigation & Director Controls */
+.director-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(12, 13, 16, 0.92);
+  border-top: 1px solid #27272a;
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 50;
+}
+
+.director-chapters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.director-chapter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #71717a;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.director-chapter-btn:hover {
+  color: #e4e4e7;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.director-chapter-btn.active {
+  color: #f4f4f5;
+  background: #18181b;
+  border-color: #3f3f46;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+.director-chapter-num {
+  font-size: 10px;
+  color: #f97316;
+  font-weight: 600;
+}
+
+.director-controls-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.control-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #18181b;
+  border: 1px solid #333338;
+  color: #e4e4e7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.control-btn:hover {
+  background: #27272a;
+  border-color: #52525b;
+  color: #ffffff;
+}
+
+.control-btn.play-btn {
+  width: 42px;
+  height: 42px;
+  background: #f4f4f5;
+  border-color: #ffffff;
+  color: #090a0c;
+}
+
+.control-btn.play-btn:hover {
+  background: #e4e4e7;
+  transform: scale(1.04);
+}
+
+.director-progress-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.director-progress-bar {
+  height: 100%;
+  background: #f97316;
+  transition: width 0.1s linear;
+}
+
+.director-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.enter-app-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f97316;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.enter-app-btn:hover {
+  background: #ea580c;
+  transform: translateY(-1px);
+}
+
+/* Architectural HUD / Telemetry Header */
+.telemetry-bar {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #71717a;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.telemetry-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.telemetry-badge {
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #27272a;
+  border-radius: 4px;
+  color: #a1a1aa;
+}
+
+.telemetry-accent {
+  color: #f97316;
+}
+
+/* Scene 4: Architectural Blueprint Grid */
+.blueprint-tier {
+  position: absolute;
+  border: 1px dashed rgba(249, 115, 22, 0.4);
+  background: rgba(249, 115, 22, 0.02);
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.blueprint-tier-label {
+  position: absolute;
+  top: -10px;
+  left: 14px;
+  background: #090a0c;
+  padding: 0 8px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: #f97316;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Scene 6: Interactive Node Details Drawer */
+.cinematic-node-drawer {
+  position: absolute;
+  top: 60px;
+  right: 24px;
+  width: 320px;
+  background: rgba(18, 19, 23, 0.95);
+  border: 1px solid #3f3f46;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+  font-size: 12px;
+  z-index: 45;
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.drawer-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f4f4f5;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drawer-close {
+  background: none;
+  border: none;
+  color: #71717a;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px;
+}
+
+.drawer-close:hover {
+  color: #f4f4f5;
+}
+
+.drawer-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  background: #27272a;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #a1a1aa;
+  margin-bottom: 12px;
+}
+
+.drawer-stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #27272a;
+  color: #a1a1aa;
+}
+
+.drawer-stat-val {
+  font-family: var(--font-mono);
+  color: #f4f4f5;
+  font-weight: 500;
+}
+
+.drawer-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 8px;
+  background: #27272a;
+  border: 1px solid #3f3f46;
+  color: #f4f4f5;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.drawer-btn:hover {
+  background: #3f3f46;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-camera, .code-panel, .blueprint-tier, .director-chapter-btn {
+    transition: none !important;
+  }
+}

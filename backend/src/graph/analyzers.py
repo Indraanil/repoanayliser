@@ -679,18 +679,6 @@ class CouplingAnalyzer:
             }
         }
     
-    def compute_risk_for_all(self, top_n: int = None) -> List[Dict]:
-        """Compute structural risk for all files, sorted by score descending."""
-        risks = []
-        for node in self.graph.nodes():
-            risk = self.compute_structural_risk(node)
-            risk['file'] = node
-            risks.append(risk)
-        risks.sort(key=lambda x: x['score'], reverse=True)
-        if top_n:
-            risks = risks[:top_n]
-        return risks
-    
     def _get_cycles_cached(self) -> List:
         if self._cycles_cache is None:
             self._cycles_cache = self._detect_cycles()

@@ -40,14 +40,6 @@ SUPPORTED_PARSER_EXTENSIONS = {
 FILTER_POLICY_VERSION = "1.0"
 
 
-def is_obviously_ignored(path: Path | str) -> bool:
-    p = Path(path)
-    for part in p.parts:
-        if part in ALWAYS_IGNORED_DIRECTORIES:
-            return True
-    return False
-
-
 class RepositoryFilter:
     def __init__(self, root: Path | str):
         self.root = Path(root).resolve()

@@ -29,10 +29,7 @@ class GraphDB:
         if self.driver:
             self.driver.close()
     
-    def clear_database(self):
-        with self.driver.session() as session:
-            session.run("MATCH (n) DETACH DELETE n")
-    
+
     def cleanup_orphaned_nodes(self):
         """Delete Function/Class nodes not connected to any File via [:CONTAINS].
         These are stale leftovers from previous analyses or failed writes.
@@ -191,60 +188,7 @@ class GraphDB:
                 class_name=class_name, line=line
             )
     
-    def create_resolved_method_call(self, from_file: str, caller_class: str, caller_method: str,
-                                     target_class: str, target_method: str, repo_id: str = None):
-        """Create a CALLS edge between two class methods, resolved via self.X attribute types.
-        
-        Example: Kernel.request_seat -> ProcessManager.get_process
-        This creates the edge: (Function{name:request_seat, parent_class:Kernel})
-                              -[:CALLS {source: 'oop_resolution'}]->
-                               (Function{name:get_process, parent_class:ProcessManager})
-        """
-        normalized_from = self._normalize_path(from_file)
-        with self.driver.session() as session:
-            if repo_id:
-                result = session.run(
-                    """
-                    MATCH (r:Repository {repo_id: $repo_id})-[:CONTAINS]->(f1:File)-[:CONTAINS]->(caller:Function)
-                    WHERE (f1.path = $from_file OR f1.file_path = $from_file)
-                      AND caller.name = $caller_method
-                      AND caller.parent_class = $caller_class
-                    MATCH (r)-[:CONTAINS]->(:File)-[:CONTAINS]->(callee:Function)
-                    WHERE callee.name = $target_method
-                      AND callee.parent_class = $target_class
-                    MERGE (caller)-[:CALLS {source: 'oop_resolution'}]->(callee)
-                    RETURN count(callee) as matched
-                    """,
-                    repo_id=repo_id,
-                    from_file=normalized_from,
-                    caller_class=caller_class,
-                    caller_method=caller_method,
-                    target_class=target_class,
-                    target_method=target_method
-                )
-            else:
-                result = session.run(
-                    """
-                    MATCH (f1:File)-[:CONTAINS]->(caller:Function)
-                    WHERE (f1.path = $from_file OR f1.file_path = $from_file)
-                      AND caller.name = $caller_method
-                      AND caller.parent_class = $caller_class
-                    MATCH (:File)-[:CONTAINS]->(callee:Function)
-                    WHERE callee.name = $target_method
-                      AND callee.parent_class = $target_class
-                    MERGE (caller)-[:CALLS {source: 'oop_resolution'}]->(callee)
-                    RETURN count(callee) as matched
-                    """,
-                    from_file=normalized_from,
-                    caller_class=caller_class,
-                    caller_method=caller_method,
-                    target_class=target_class,
-                    target_method=target_method
-                )
-            record = result.single()
-            if record and record['matched'] > 0:
-                logger.debug(f"✓ OOP CALLS: {caller_class}.{caller_method} -> {target_class}.{target_method}")
-    
+
     def create_import_relationship(self, from_file: str, to_module: str, repo_id: str = None):
         # Normalize from_file path for matching
         normalized_from = self._normalize_path(from_file)
@@ -775,25 +719,7 @@ class GraphDB:
                 )
             return [record["path"] for record in result]
     
-    def debug_file(self, file_path: str) -> Dict:
-        """Debug method to see what's stored for a file"""
-        with self.driver.session() as session:
-            result = session.run(
-                """
-                MATCH (f:File)
-                WHERE f.path CONTAINS $path
-                OPTIONAL MATCH (f)-[:IMPORTS]->(m:Module)
-                OPTIONAL MATCH (f)-[:DEPENDS_ON]->(dep:File)
-                RETURN f.path as file_path, 
-                       COLLECT(DISTINCT m.name) as modules,
-                       COLLECT(DISTINCT dep.path) as files,
-                       [(f)-[r]->() | type(r)] as rel_types
-                LIMIT 5
-                """,
-                path=file_path.split('\\')[-1]  # Just filename
-            )
-            return [dict(record) for record in result]
-    
+
     def get_all_files(self, repo_id: str = None) -> List[str]:
         """Get all file paths stored in graph, optionally filtered by repo"""
         with self.driver.session() as session:
@@ -1313,47 +1239,3 @@ class GraphDB:
         except:
             return file_path
     
-    def store_dependency_snapshot(self, repo_id: str, commit_hash: str, edges: List[tuple]):
-        """Store dependency edges for a commit"""
-        with self.driver.session() as session:
-            for source, target in edges:
-                session.run("""
-                    MATCH (c:Commit {repo_id: $repo_id, commit_hash: $commit_hash})
-                    MERGE (f1:File {path: $source})
-                    SET f1.file_path = $source
-                    MERGE (f2:File {path: $target})
-                    SET f2.file_path = $target
-                    MERGE (f1)-[:DEPENDS_ON_AT {commit: $commit_hash}]->(f2)
-                    """, repo_id=repo_id, commit_hash=commit_hash, source=source, target=target)
-    
-    def store_coupling_snapshot(self, repo_id: str, commit_hash: str, metrics: Dict):
-        """Store coupling metrics for a commit"""
-        with self.driver.session() as session:
-            session.run("""
-                MATCH (c:Commit {repo_id: $repo_id, commit_hash: $commit_hash})
-                SET c.total_files = $total_files,
-                    c.total_deps = $total_deps,
-                    c.avg_coupling = $avg_coupling,
-                    c.cycle_count = $cycle_count
-                """, repo_id=repo_id, commit_hash=commit_hash, **metrics)
-    
-    def get_dependencies_at_commit(self, repo_id: str, commit_hash: str) -> List[tuple]:
-        """Get dependency edges at specific commit"""
-        with self.driver.session() as session:
-            result = session.run("""
-                MATCH (f1:File)-[r:DEPENDS_ON_AT {commit: $commit_hash}]->(f2:File)
-                RETURN COALESCE(f1.file_path, f1.path) as source, 
-                       COALESCE(f2.file_path, f2.path) as target
-                """, commit_hash=commit_hash)
-            return [(r['source'], r['target']) for r in result]
-    
-    def get_coupling_at_commit(self, repo_id: str, commit_hash: str) -> Dict:
-        """Get coupling metrics at specific commit"""
-        with self.driver.session() as session:
-            result = session.run("""
-                MATCH (c:Commit {repo_id: $repo_id, commit_hash: $commit_hash})
-                RETURN c.total_files as total_files, c.total_deps as total_deps,
-                       c.avg_coupling as avg_coupling, c.cycle_count as cycle_count
-                """, repo_id=repo_id, commit_hash=commit_hash)
-            record = result.single()
-            return dict(record) if record else {}

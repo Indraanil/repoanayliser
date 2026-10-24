@@ -3,7 +3,6 @@ import './App.css';
 import AnalyzeRepo from './components/AnalyzeRepo';
 import PatternDetection from './components/PatternDetection';
 import CouplingAnalysis from './components/CouplingAnalysis';
-import ImpactAnalysis from './components/ImpactAnalysis';
 import ArchitectureView from './components/ArchitectureView';
 import DependencyGraph from './components/DependencyGraph';
 import FunctionGraph from './components/FunctionGraph';
@@ -12,6 +11,7 @@ import RepositoryManager from './components/RepositoryManager';
 import SnapshotComparison from './components/SnapshotComparison';
 import BlastRadius from './components/BlastRadius';
 import CodeHealth from './components/CodeHealth';
+import CinematicStory from './components/cinematic/CinematicStory';
 
 const repositoryLabel = (result, source) => {
   const explicit = result?.repo_name || result?.repository_name || result?.name;
@@ -23,11 +23,11 @@ const repositoryLabel = (result, source) => {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState('analyze');
+  const [activeTab, setActiveTab] = useState('story');
   const [refreshKey, setRefreshKey] = useState(0);
   const [displayText, setDisplayText] = useState('');
-  const [currentRepoId, setCurrentRepoId] = useState(null);
-  const [currentRepoName, setCurrentRepoName] = useState(null);
+  const [currentRepoId, setCurrentRepoId] = useState('eac55829cf3ea1d6');
+  const [currentRepoName, setCurrentRepoName] = useState('repoanayliser');
 
   const handleAnalysisComplete = (result, source) => {
     setRefreshKey(prev => prev + 1);
@@ -81,17 +81,17 @@ function App() {
   }, []);
 
   const tabs = [
-    { id: 'analyze', label: 'Analyze', icon: '◈' },
-    { id: 'repositories', label: 'Repos', icon: '▦' },
-    { id: 'patterns', label: 'Patterns', icon: '◬' },
-    { id: 'coupling', label: 'Coupling', icon: '⬡' },
-    { id: 'blast-radius', label: 'Blast', icon: '◎' },
-    { id: 'impact', label: 'Impact', icon: '⚡' },
-    { id: 'functions', label: 'Functions', icon: 'ƒ' },
-    { id: 'health', label: 'Unused', icon: '○' },
+    { id: 'story', label: 'Story Experience', icon: '▶' },
     { id: 'architecture', label: 'Architecture', icon: '△' },
     { id: 'graph', label: 'File Graph', icon: '⬢' },
+    { id: 'blast-radius', label: 'Blast Radius', icon: '◎' },
+    { id: 'patterns', label: 'Patterns', icon: '◬' },
+    { id: 'coupling', label: 'Coupling', icon: '⬡' },
+    { id: 'functions', label: 'Functions', icon: 'ƒ' },
+    { id: 'health', label: 'Unused', icon: '○' },
     { id: 'function-graph', label: 'Fn Graph', icon: '⬣' },
+    { id: 'repositories', label: 'Repos', icon: '▦' },
+    { id: 'analyze', label: 'Analyze', icon: '◈' },
     { id: 'snapshots', label: 'Snapshots', icon: '❐' }
   ];
 
@@ -104,12 +104,33 @@ function App() {
             <h1 style={styles.title}>{displayText}</h1>
             <p style={styles.subtitle}>Architectural Recovery & Semantic Synthesis</p>
           </div>
-          {currentRepoName && (
-            <div style={styles.repoIndicator}>
-              <span style={styles.repoDot}></span>
-              {currentRepoName}
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              onClick={() => setActiveTab('story')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                background: activeTab === 'story' ? '#f97316' : 'rgba(249, 115, 22, 0.12)',
+                color: activeTab === 'story' ? '#ffffff' : '#f97316',
+                border: '1px solid rgba(249, 115, 22, 0.4)',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              <span>▶</span> Cinematic Story
+            </button>
+            {currentRepoName && (
+              <div style={styles.repoIndicator}>
+                <span style={styles.repoDot}></span>
+                {currentRepoName}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -135,6 +156,13 @@ function App() {
       {/* Main Content */}
       <main style={styles.main}>
         <div className="fade-in" key={activeTab + refreshKey}>
+          {activeTab === 'story' && (
+            <CinematicStory
+              repoId={currentRepoId || 'eac55829cf3ea1d6'}
+              onSelectTab={(tabId) => setActiveTab(tabId)}
+              onExitToApp={() => setActiveTab('graph')}
+            />
+          )}
           {activeTab === 'analyze' && <AnalyzeRepo onAnalysisComplete={handleAnalysisComplete} />}
           {activeTab === 'repositories' && (
             <RepositoryManager
@@ -146,7 +174,6 @@ function App() {
           {activeTab === 'patterns' && <PatternDetection key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'coupling' && <CouplingAnalysis key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'blast-radius' && <BlastRadius key={refreshKey} repoId={currentRepoId} />}
-          {activeTab === 'impact' && <ImpactAnalysis repoId={currentRepoId} />}
           {activeTab === 'functions' && <FunctionAnalysis key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'health' && <CodeHealth key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'architecture' && <ArchitectureView key={refreshKey} repoId={currentRepoId} />}

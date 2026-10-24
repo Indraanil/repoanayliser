@@ -193,36 +193,4 @@ class DependencyMapper:
         except Exception:
             return []
 
-    def calculate_fan_in(self, node: str) -> int:
-        return self.graph.in_degree(node)
 
-    def calculate_fan_out(self, node: str) -> int:
-        return self.graph.out_degree(node)
-
-    def get_strongly_connected_components(self) -> List[List[str]]:
-        return list(nx.strongly_connected_components(self.graph))
-
-    def get_blast_radius(self, file_path: str, depth: int = 3) -> List[str]:
-        normalized = str(Path(file_path).resolve()) if Path(file_path).exists() else file_path
-
-        target_node = None
-        for node in self.graph.nodes():
-            if node == normalized or node.endswith(str(Path(file_path).name)):
-                target_node = node
-                break
-
-        if not target_node:
-            return []
-
-        affected = set()
-        for node in self.graph.nodes():
-            if node == target_node or not self.graph.nodes[node].get('file'):
-                continue
-            try:
-                if nx.has_path(self.graph, node, target_node):
-                    path_length = nx.shortest_path_length(self.graph, node, target_node)
-                    if path_length <= depth:
-                        affected.add(node)
-            except (nx.NetworkXError, nx.NodeNotFound):
-                pass
-        return list(affected)

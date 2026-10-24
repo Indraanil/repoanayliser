@@ -33,9 +33,6 @@ export const api = {
   getBlastRadius: (filePath, changeType = 'modify', repoId) =>
     axios.get(`${API_BASE}/blast-radius/${filePath}`, { params: { change_type: changeType, ...(repoId ? { repo_id: repoId } : {}) } }),
 
-  debugFiles: () =>
-    axios.get(`${API_BASE}/debug/files`),
-
   getGraphData: (repoId) =>
     axios.get(`${API_BASE}/graph/data`, { params: repoId ? { repo_id: repoId } : {} }),
 
