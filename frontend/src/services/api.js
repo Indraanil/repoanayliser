@@ -3,6 +3,9 @@ import axios from 'axios';
 const API_BASE = 'http://localhost:8000';
 
 export const api = {
+  chat: (query, repoId) =>
+    axios.post(`${API_BASE}/chat`, { query, repo_id: repoId }),
+
   analyzeRepo: (repoUrl) =>
     axios.post(`${API_BASE}/analyze`, { repo_url: repoUrl }),
 
