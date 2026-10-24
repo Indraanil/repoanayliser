@@ -104,33 +104,12 @@ function App() {
             <h1 style={styles.title}>{displayText}</h1>
             <p style={styles.subtitle}>Architectural Recovery & Semantic Synthesis</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button
-              onClick={() => setActiveTab('story')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 14px',
-                background: activeTab === 'story' ? '#f97316' : 'rgba(249, 115, 22, 0.12)',
-                color: activeTab === 'story' ? '#ffffff' : '#f97316',
-                border: '1px solid rgba(249, 115, 22, 0.4)',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              <span>▶</span> Cinematic Story
-            </button>
-            {currentRepoName && (
-              <div style={styles.repoIndicator}>
-                <span style={styles.repoDot}></span>
-                {currentRepoName}
-              </div>
-            )}
-          </div>
+          {currentRepoName && (
+            <div style={styles.repoIndicator}>
+              <span style={styles.repoDot}></span>
+              {currentRepoName}
+            </div>
+          )}
         </div>
       </header>
 
