@@ -283,6 +283,36 @@ async def manage_live_sync(
     return live_sync.status(repo_id)
 
 
+@server.tool(
+    description="List discovered workflow entrypoints (API routes, background workers, orchestrators) in a repository.",
+    annotations=READ_ONLY,
+)
+async def list_workflows(
+    repo_id: str,
+) -> dict[str, Any]:
+    t0 = time.perf_counter()
+    result = await asyncio.to_thread(service.workflows, repo_id)
+    _log_tool("list_workflows", repo_id=repo_id, target="Workflows", details=f"Found {result.get('total', 0)} workflows", tokens_saved=2500, start_time=t0)
+    return result
+
+
+@server.tool(
+    description="Trace execution workflow from an entrypoint down to data sinks, with role classifications and Mermaid diagram.",
+    annotations=READ_ONLY,
+)
+async def get_workflow(
+    repo_id: str,
+    entrypoint_name: str,
+    file_path: str | None = None,
+    depth: int = 4,
+) -> dict[str, Any]:
+    t0 = time.perf_counter()
+    result = await asyncio.to_thread(service.trace_workflow, repo_id, entrypoint_name, file_path, depth)
+    _log_tool("get_workflow", repo_id=repo_id, target=entrypoint_name, details=f"Traced execution workflow ({result.get('summary', {}).get('total_steps', 0)} steps)", tokens_saved=4800, start_time=t0)
+    return result
+
+
 def main() -> None:
     atexit.register(service.close)
     server.run(transport="stdio")
+

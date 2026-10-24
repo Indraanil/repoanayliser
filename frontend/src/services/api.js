@@ -106,7 +106,19 @@ export const api = {
     axios.get(`${API_BASE}/confidence-report`, { params: repoId ? { repo_id: repoId } : {} }),
 
   getCodeHealth: (repoId) =>
-    axios.get(`${API_BASE}/code-health`, { params: repoId ? { repo_id: repoId } : {} })
+    axios.get(`${API_BASE}/code-health`, { params: repoId ? { repo_id: repoId } : {} }),
+
+  getWorkflows: (repoId) =>
+    axios.get(`${API_BASE}/workflows`, { params: repoId ? { repo_id: repoId } : {} }),
+
+  traceWorkflow: (entrypointName, repoId = null, filePath = null, depth = 4) =>
+    axios.get(`${API_BASE}/workflow/${encodeURIComponent(entrypointName)}`, {
+      params: {
+        ...(repoId ? { repo_id: repoId } : {}),
+        ...(filePath ? { file_path: filePath } : {}),
+        depth
+      }
+    })
 };
 
 export const getConfidenceReport = async (repoId) => {

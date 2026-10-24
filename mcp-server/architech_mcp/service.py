@@ -835,3 +835,40 @@ class ArchitechService:
                 limit=clamp(limit, 1, 100),
             )
             return {"items": [compact(dict(row)) for row in rows]}
+
+    def workflows(self, repo_id: str) -> dict[str, Any]:
+        """Discover candidate workflow entrypoints across the repository"""
+        from src.graph.graph_db import GraphDB
+        from src.analysis.workflow_extractor import WorkflowExtractor
+        root = self.repository_root(repo_id)
+        graph_db = GraphDB(config.neo4j_uri, config.neo4j_user, config.neo4j_password)
+        try:
+            extractor = WorkflowExtractor(graph_db, repo_path=root)
+            items = extractor.discover_workflows(repo_id=repo_id)
+            return {"total": len(items), "workflows": items}
+        finally:
+            graph_db.close()
+
+    def trace_workflow(
+        self,
+        repo_id: str,
+        entrypoint_name: str,
+        file_path: str | None = None,
+        depth: int = 4
+    ) -> dict[str, Any]:
+        """Trace execution workflow, classify roles, and generate sequence/flowcharts"""
+        from src.graph.graph_db import GraphDB
+        from src.analysis.workflow_extractor import WorkflowExtractor
+        root = self.repository_root(repo_id)
+        graph_db = GraphDB(config.neo4j_uri, config.neo4j_user, config.neo4j_password)
+        try:
+            extractor = WorkflowExtractor(graph_db, repo_path=root)
+            return extractor.trace_workflow(
+                entrypoint_name=entrypoint_name,
+                file_path=file_path,
+                repo_id=repo_id,
+                max_depth=depth
+            )
+        finally:
+            graph_db.close()
+

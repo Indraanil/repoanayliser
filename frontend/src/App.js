@@ -11,6 +11,7 @@ import RepositoryManager from './components/RepositoryManager';
 import SnapshotComparison from './components/SnapshotComparison';
 import BlastRadius from './components/BlastRadius';
 import CodeHealth from './components/CodeHealth';
+import WorkflowExplorer from './components/WorkflowExplorer';
 import CinematicStory from './components/cinematic/CinematicStory';
 
 const repositoryLabel = (result, source) => {
@@ -82,6 +83,7 @@ function App() {
 
   const tabs = [
     { id: 'story', label: 'Story Experience', icon: '▶' },
+    { id: 'workflows', label: 'Workflows', icon: '⇄' },
     { id: 'architecture', label: 'Architecture', icon: '△' },
     { id: 'graph', label: 'File Graph', icon: '⬢' },
     { id: 'blast-radius', label: 'Blast Radius', icon: '◎' },
@@ -154,6 +156,7 @@ function App() {
           {activeTab === 'coupling' && <CouplingAnalysis key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'blast-radius' && <BlastRadius key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'functions' && <FunctionAnalysis key={refreshKey} repoId={currentRepoId} />}
+          {activeTab === 'workflows' && <WorkflowExplorer key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'health' && <CodeHealth key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'architecture' && <ArchitectureView key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'graph' && <DependencyGraph key={refreshKey} repoId={currentRepoId} />}

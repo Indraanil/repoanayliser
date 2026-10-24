@@ -621,6 +621,30 @@ async def get_function_call_chain(
     return graph_data
 
 
+# --- Workflow & Execution Pipeline Recovery Endpoints ---
+@app.get("/workflows")
+async def list_workflows(repo_id: str = None):
+    """Discover candidate workflow entrypoints across the repository"""
+    workflows = engine.get_workflows(repo_id)
+    return {"total": len(workflows), "workflows": workflows}
+
+@app.get("/workflow/{entrypoint_name}")
+async def trace_workflow(
+    entrypoint_name: str,
+    file_path: str = None,
+    repo_id: str = None,
+    depth: int = 4
+):
+    """Trace execution pipeline, classify roles, and generate sequence/flowcharts"""
+    return engine.trace_workflow(
+        entrypoint_name=entrypoint_name,
+        file_path=file_path,
+        repo_id=repo_id,
+        max_depth=depth
+    )
+
+
+
 # --- Qdrant Vector DB & Graph RAG Retrieval Endpoints ---
 @app.post("/retrieval/search")
 async def semantic_search(request: SearchRequest):

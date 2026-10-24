@@ -40,6 +40,12 @@ SUPPORTED_PARSER_EXTENSIONS = {
 FILTER_POLICY_VERSION = "1.0"
 
 
+def is_obviously_ignored(path: Path | str) -> bool:
+    """Check if a path contains any obviously ignored directory components."""
+    parts = Path(path).parts
+    return any(part in ALWAYS_IGNORED_DIRECTORIES for part in parts)
+
+
 class RepositoryFilter:
     def __init__(self, root: Path | str):
         self.root = Path(root).resolve()

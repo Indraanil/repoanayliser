@@ -189,13 +189,15 @@ class ProtocolSurfaceTests(unittest.TestCase):
                 "get_architecture",
                 "get_change_impact",
                 "get_code_health",
+                "list_workflows",
+                "get_workflow",
                 "get_snapshots",
                 "sync_repository_changes",
                 "manage_live_sync",
             },
             names,
         )
-        self.assertLessEqual(len(tools), 12)
+        self.assertLessEqual(len(tools), 14)
 
 
 class ServiceSemanticsTests(unittest.TestCase):

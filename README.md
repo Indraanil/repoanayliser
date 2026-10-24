@@ -206,6 +206,7 @@ The ARCHITECH web frontend (`http://localhost:3000`) provides 12 specialized vie
 10. **▦ Repository Manager (`RepositoryManager.js`):** Multi-repository workspace hub. Switch active projects, trigger vector re-indexing, inspect snapshot histories, and run cryptographic SHA-256 tamper-detection audits.
 11. **◈ Analyze (`AnalyzeRepo.js`):** Ingestion console supporting both native OS local folder selection (`/browse-folder`) and remote GitHub repository URL cloning with asynchronous job status polling.
 12. **❐ Snapshot Comparison (`SnapshotComparison.js`):** Cross-commit architectural diffing engine. Compare any two snapshots to view deltas in file count, coupling metrics, circular cycles, and architectural pattern drift.
+13. **⇄ Workflow Explorer (`WorkflowExplorer.js`):** Autonomous execution pipeline and data flow recovery engine. Discovers entrypoints (API routes, async workers, orchestrators, CLI scripts), traces depth-first call paths down to database sinks, and compiles chronological execution cards, Mermaid Sequence Diagrams, and Flowcharts.
 
 ---
 
@@ -238,9 +239,9 @@ ARCHITECH includes a production-ready, local **Model Context Protocol (MCP)** st
                              └─────────────────────┘           └─────────────────────┘
 ```
 
-### Available MCP Tools Reference (11 Tools)
+### Available MCP Tools Reference (13 Tools)
 
-ARCHITECH provides **11 specialized tools** exposed via the Model Context Protocol:
+ARCHITECH provides **13 specialized tools** exposed via the Model Context Protocol:
 
 | Tool Name | Annotation | Key Arguments | Est. Tokens Saved | Description |
 | :--- | :---: | :--- | :---: | :--- |
@@ -252,6 +253,8 @@ ARCHITECH provides **11 specialized tools** exposed via the Model Context Protoc
 | `get_architecture` | `Read-Only` | `repo_id`, `include_components`, `generate_if_missing` | **~16,000** | Returns macro/meso/micro architectural report, detected patterns, and metrics. |
 | `get_change_impact` | `Read-Only` | `repo_id`, `file_path`, `change_type` (`"modify"`, `"move"`, `"delete"`), `depth` | **~11,000** | Simulates reverse-dependency blast radius, broken callers, and 0–100 risk score. |
 | `get_code_health` | `Read-Only` | `repo_id`, `category` (`"files"`, `"functions"`, `"duplicate_files"`), `limit` | ~2,500 | Returns unused files, uncalled functions, duplicate files, and structural risks. |
+| `list_workflows` | `Read-Only` | `repo_id` | **~2,500** | Lists discovered workflow entrypoints (API routes, async workers, orchestrators). |
+| `get_workflow` | `Read-Only` | `repo_id`, `entrypoint_name`, `file_path`, `depth` | **~4,800** | Traces execution pipeline down to data sinks with role classifications and Mermaid diagram. |
 | `get_snapshots` | `Read-Only` | `repo_id`, `compare_from`, `compare_to`, `limit` | ~2,000 | Lists cryptographic snapshots or computes structural diffs between two commits. |
 | `sync_repository_changes` | `Local-Write` | `repo_id`, `create_checkpoint` | Incremental | Incrementally parses changed files and updates graph edges in real time. |
 | `manage_live_sync` | `Local-Write` | `action` (`"start"`, `"stop"`, `"status"`), `repo_id`, `debounce_ms` | Real-time | Starts or stops a file system watcher (`watchfiles.awatch`) that automatically updates Neo4j on file save. |
@@ -746,6 +749,8 @@ python server.py
 | **Graphs** | `GET` | `/dependencies/{file_path}` | Returns direct incoming and outgoing file dependencies. |
 | **Functions** | `GET` | `/functions` | Lists all indexed functions with their source files and line spans. |
 | **Functions** | `GET` | `/function/{name}` | Returns callers, implementation code, and LLM explanation. |
+| **Workflows** | `GET` | `/workflows` | Discovers candidate workflow entrypoints across the repository. |
+| **Workflows** | `GET` | `/workflow/{entrypoint}` | Traces execution pipeline down to data sinks with sequence & flowcharts. |
 | **Code Health**| `GET` | `/code-health` | Evidence-backed candidates for unused files, uncalled functions, and duplicates. |
 | **Repositories**| `GET` | `/repositories` | Lists all analyzed repositories with snapshot and file counts. |
 | **Repositories**| `POST`| `/repository/{id}/load` | Loads a repository's cached analysis state into memory. |
@@ -782,7 +787,8 @@ repoanayliser/
 │       ├── mcp_inspector.py        # Live Inspector HUD HTML/JS renderer & SQLite telemetry
 │       ├── analysis/
 │       │   ├── architecture_grounding.py # Grounds claims against extracted evidence
-│       │   └── confidence_analyzer.py    # Failure mode and confidence scoring
+│       │   ├── confidence_analyzer.py    # Failure mode and confidence scoring
+│       │   └── workflow_extractor.py     # Execution pipeline recovery & Mermaid synthesis
 │       ├── graph/
 │       │   ├── analyzers.py        # PatternDetector (8 patterns) & CouplingAnalyzer (metrics & risk)
 │       │   ├── blast_radius.py     # Systemic change simulator (Delete, Move, Modify)
@@ -827,6 +833,7 @@ repoanayliser/
 │       │   ├── RepositoryManager.js # Workspace catalog, snapshots & integrity controls
 │       │   ├── SearchableTreeSelect.js # Hierarchical file picker component
 │       │   ├── SnapshotComparison.js# Cross-commit architectural diffing comparison
+│       │   ├── WorkflowExplorer.js  # Execution pipeline, Mermaid diagram & sink viewer
 │       │   └── cinematic/
 │       │       ├── CinematicStory.js # 6-chapter audio-visual interactive narrative
 │       │       ├── CodeLabyrinth.js  # Three.js 3D isometric procedural labyrinth

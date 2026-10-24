@@ -17,6 +17,7 @@ from .retrieval.graphify_retriever import GraphifyRetriever
 from .retrieval.retrieval_engine import RetrievalEngine
 from .retrieval.graph_rag import GraphRAGEngine
 from .reasoning.llm_reasoner import LLMReasoner
+from .analysis.workflow_extractor import WorkflowExtractor
 from .config import settings
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -55,6 +56,7 @@ class AnalysisEngine:
         self.retrieval_engine = RetrievalEngine(self.graphify, self.graph_db, self.graph_rag)
         self.llm = LLMReasoner()
         self.version_tracker = VersionTracker(self.graph_db)
+        self.workflow_extractor = WorkflowExtractor(self.graph_db, self.dependency_mapper)
         self.pattern_detector = None
         self.coupling_analyzer = None
         self.blast_radius_analyzer = None
@@ -1866,3 +1868,40 @@ class AnalysisEngine:
             "indexed_count": count,
             "qdrant": status_info,
         }
+
+    def get_workflows(self, repo_id: Optional[str] = None) -> List[Dict]:
+        """Discover candidate workflow entrypoints across the repository"""
+        active_repo = repo_id or self.current_repo_id
+        if not active_repo:
+            repos = self.version_tracker.list_repositories()
+            if repos:
+                active_repo = repos[0]["repo_id"]
+                self.load_repository_analysis(active_repo)
+
+        self.workflow_extractor.repo_path = self.repo_path
+        self.workflow_extractor.dependency_mapper = self.dependency_mapper
+        return self.workflow_extractor.discover_workflows(repo_id=active_repo)
+
+    def trace_workflow(
+        self,
+        entrypoint_name: str,
+        file_path: Optional[str] = None,
+        repo_id: Optional[str] = None,
+        max_depth: int = 4
+    ) -> Dict:
+        """Trace execution workflow, classify roles, and generate sequence/flowchart diagrams"""
+        active_repo = repo_id or self.current_repo_id
+        if not active_repo:
+            repos = self.version_tracker.list_repositories()
+            if repos:
+                active_repo = repos[0]["repo_id"]
+                self.load_repository_analysis(active_repo)
+
+        self.workflow_extractor.repo_path = self.repo_path
+        self.workflow_extractor.dependency_mapper = self.dependency_mapper
+        return self.workflow_extractor.trace_workflow(
+            entrypoint_name=entrypoint_name,
+            file_path=file_path,
+            repo_id=active_repo,
+            max_depth=max_depth
+        )
