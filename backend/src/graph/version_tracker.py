@@ -140,13 +140,17 @@ class VersionTracker:
                         snapshot_id: $snapshot_id,
                         repo_id: $repo_id,
                         created_at: datetime(),
-                        commit_hash: $commit_hash
+                        commit_hash: $commit_hash,
+                        commit_message: $commit_message,
+                        author_name: $author_name
                     })
                     CREATE (r)-[:HAS_SNAPSHOT]->(s)
                     """,
                     repo_id=repo_id,
                     snapshot_id=snapshot_id,
-                    commit_hash=commit_info['commit_hash'] if commit_info else None
+                    commit_hash=commit_info['commit_hash'] if commit_info else None,
+                    commit_message=commit_info.get('message') if commit_info else None,
+                    author_name=commit_info.get('author_name') if commit_info else None
                 )
             
             # Create commit node BEFORE file tracking

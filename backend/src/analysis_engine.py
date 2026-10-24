@@ -1271,11 +1271,11 @@ class AnalysisEngine:
                 RETURN s1.patterns as p1, s1.coupling as c1, s1.avg_coupling as ac1,
                        s1.cycle_count as cc1, s1.total_files as tf1, s1.total_deps as td1,
                        s1.arch_macro as macro1, s1.arch_meso as meso1,
-                       s1.commit_hash as commit1, c1.message as msg1,
+                       s1.commit_hash as commit1, COALESCE(s1.commit_message, c1.message) as msg1,
                        s2.patterns as p2, s2.coupling as c2, s2.avg_coupling as ac2,
                        s2.cycle_count as cc2, s2.total_files as tf2, s2.total_deps as td2,
                        s2.arch_macro as macro2, s2.arch_meso as meso2,
-                       s2.commit_hash as commit2, c2.message as msg2,
+                       s2.commit_hash as commit2, COALESCE(s2.commit_message, c2.message) as msg2,
                        toString(s1.created_at) as date1, toString(s2.created_at) as date2
                 """, snapshot1=snapshot1, snapshot2=snapshot2)
             record = result.single()
