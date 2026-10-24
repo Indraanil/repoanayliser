@@ -5,6 +5,8 @@
 <p align="center">
   <a href="https://modelcontextprotocol.io/"><img src="https://img.shields.io/badge/Protocol-Model_Context_Protocol-8A2BE2?style=for-the-badge&logo=anthropic&logoColor=white" alt="MCP"></a>
   <a href="https://neo4j.com/"><img src="https://img.shields.io/badge/Graph_Database-Neo4j_5.x-008CC1?style=for-the-badge&logo=neo4j&logoColor=white" alt="Neo4j"></a>
+  <a href="https://qdrant.tech/"><img src="https://img.shields.io/badge/Vector_DB-Qdrant_Embedded-DC2626?style=for-the-badge&logo=qdrant&logoColor=white" alt="Qdrant"></a>
+  <a href="https://huggingface.co/BAAI/bge-base-en-v1.5"><img src="https://img.shields.io/badge/Embeddings-Hugging_Face_768d-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Hugging Face"></a>
   <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/API_Framework-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"></a>
   <a href="https://tree-sitter.github.io/tree-sitter/"><img src="https://img.shields.io/badge/AST_Parsing-Tree--sitter-1e293b?style=for-the-badge" alt="Tree-sitter"></a>
   <a href="https://networkx.org/"><img src="https://img.shields.io/badge/Graph_Algorithms-NetworkX-38bdf8?style=for-the-badge" alt="NetworkX"></a>
@@ -45,6 +47,7 @@
   - [5. Change Impact & Blast Radius Simulation](#5-change-impact--blast-radius-simulation)
   - [6. Cryptographic Snapshot Lineage & Cross-Commit Auditing](#6-cryptographic-snapshot-lineage--cross-commit-auditing)
   - [7. Hybrid Semantic Synthesis (LLM Reasoning + Graphify)](#7-hybrid-semantic-synthesis-llm-reasoning--graphify)
+  - [8. Graph RAG & Embedded Hybrid Vector Store (Qdrant + Hugging Face 768-dim + BM25)](#8-graph-rag--embedded-hybrid-vector-store-qdrant--hugging-face-768-dim--bm25)
 - [⚡ Quickstart & Installation](#-quickstart--installation)
   - [Prerequisites](#prerequisites)
   - [1. Clone Repository](#1-clone-repository)
@@ -118,6 +121,15 @@ ARCHITECH executes across two parallel tracks converging on a unified, high-spee
                                                        │
                                                        ▼
                                   ┌─────────────────────────────────────────┐
+                                  │ Embedded Hybrid Vector DB (Qdrant)      │
+                                  │ • 768-dim Hugging Face BAAI/bge-base    │
+                                  │ • Qdrant/bm25 Sparse Lexical Vectors    │
+                                  │ • Reciprocal Rank Fusion (RRF) Hybrid   │
+                                  │ • Multi-Hop Graph RAG Context Expansion │
+                                  └────────────────────┬────────────────────┘
+                                                       │
+                                                       ▼
+                                  ┌─────────────────────────────────────────┐
                                   │ Semantic LLM Synthesis (Groq Llama 3.3) │
                                   │ Macro, Meso & Micro Architecture Review │
                                   └────────────────────┬────────────────────┘
@@ -146,12 +158,13 @@ ARCHITECH executes across two parallel tracks converging on a unified, high-spee
 
 ## ✨ Core Capabilities & Feature Matrix
 
-ARCHITECH provides 9 core architectural recovery modules designed for dual-mode human and AI-assisted workflows:
+ARCHITECH provides 10 core architectural recovery modules designed for dual-mode human and AI-assisted workflows:
 
 | Module / Capability | Primary Responsibility | Technical Subsystem & Output |
 | :--- | :--- | :--- |
 | **🚀 Ingestion & Parsing** | Non-executing AST extraction across Python, JS, TS, and Java; SHA-256 fingerprinting. | Polyglot Tree-sitter CST parsers with OOP method resolution. |
 | **🗂️ Workspace & Snapshots** | Multi-repository workspace management, commit lineage backfilling, and integrity verification. | Neo4j `(:Repository)`, `(:Snapshot)`, `(:Commit)` lineage graph. |
+| **🧠 Graph RAG & Hybrid Search** | Sub-millisecond code retrieval combining 768-dim dense semantic embeddings with BM25 sparse keyword search and multi-hop graph expansion. | Embedded Qdrant vector database + Hugging Face BAAI/bge-base-en-v1.5 (ONNX) + RRF fusion + Neo4j caller/callee traversal. |
 | **📊 Architectural Report** | Synthesizes Macro, Meso, and Micro architecture review grounded in real code evidence. | Groq Llama-3.3-70B synthesis + Graphify structural AST index. |
 | **🕸️ File Dependency Graph** | Zoomable, force-directed topological visualization of inter-file imports and module dependencies. | Force-directed D3.js canvas powered by Neo4j `[:DEPENDS_ON]`. |
 | **🔗 Function Call Graph** | Interactive inspection of cross-file function invocations, caller-callee bindings, and deep call paths. | Tree-sitter receiver dispatch + Neo4j `[:CALLS_TRANSITIVE]`. |
@@ -488,6 +501,24 @@ To generate actionable, grounded architectural insights rather than superficial 
 
 ---
 
+### 8. Graph RAG & Embedded Hybrid Vector Store (Qdrant + Hugging Face 768-dim + BM25)
+To empower sub-millisecond semantic retrieval across dense codebases without external vector cloud subscriptions or API keys, ARCHITECH embeds a dual-vector **Qdrant** database directly within the backend runtime:
+
+* **Dual-Vector Embedding Architecture:**
+  * **Dense Semantic Representation (768-dim):** Computes deep contextual embeddings via the Hugging Face `BAAI/bge-base-en-v1.5` model, executed entirely on local CPU via FastEmbed ONNX runtime (~210MB local footprint, zero GPU/PyTorch overhead).
+  * **Sparse Lexical Representation:** Computes exact BM25 keyword and symbol term frequencies (`Qdrant/bm25`) to preserve precision for exact class names, methods, and identifier lookups.
+* **Reciprocal Rank Fusion (RRF) Hybrid Search:**
+  * Combines dense vector cosine similarity with sparse lexical matches via native Qdrant `Prefetch` and `FusionQuery(fusion=Fusion.RRF)`.
+  * Outperforms standalone dense embeddings or keyword searches by eliminating false positives and vocabulary mismatch issues.
+* **Knowledge Graph Topology Expansion (Graph RAG):**
+  * When candidate code entities are retrieved from Qdrant, ARCHITECH traverses the active Neo4j graph and NetworkX directed graph to discover **1-hop and 2-hop topological neighbors** (callers, called functions, imported modules, and afferent dependents).
+  * Fuses vector similarity scores with structural graph centrality boosts (`score = vector_score + graph_boost`), ensuring architecturally critical entities are prioritized for reasoning.
+* **Zero-Cloud Persistent On-Disk Storage:**
+  * Stored embedded in `backend/.data/qdrant/` using SQLite storage engines and WAL journals.
+  * Vectors persist across server reboots. Automatically validates and syncs missing embeddings when loading cached snapshots with zero user intervention.
+
+---
+
 ## ⚡ Quickstart & Installation
 
 ### Prerequisites
@@ -616,6 +647,10 @@ python server.py
 | `GET` | `/repository/{id}/commits` | Returns commit lineage for a repository. |
 | `GET` | `/repository/{id}/file-history` | Returns cryptographic SHA-256 version lineage for a file. |
 | `POST` | `/repository/{id}/check-integrity` | Verifies current file content against stored hash to detect tampering. |
+| `POST` | `/retrieval/search` | Hybrid semantic retrieval with Hugging Face 768-dim embeddings + Qdrant Graph RAG. |
+| `GET` | `/retrieval/search` | GET variant for query string semantic retrieval and sub-graph ranking. |
+| `GET` | `/retrieval/status` | Returns Qdrant connection status, 768-dim model metadata, and total cached points. |
+| `POST` | `/retrieval/reindex` | Triggers background vector re-indexing for an active or specified repository. |
 | `GET` | `/inspector` | Serves the interactive MCP Live Inspector and Telemetry HUD. |
 | `GET` | `/api/mcp/activity` | Returns recent AI MCP tool activity and token savings telemetry. |
 | `POST` | `/api/live-events` | Ingests real-time file-save events from MCP watchdog into HUD. |
@@ -652,8 +687,11 @@ repoanayliser/
 │       ├── reasoning/
 │       │   └── llm_reasoner.py     # Groq API integration for architectural synthesis
 │       └── retrieval/
+│           ├── embedding_service.py # Lazy ONNX loader for 768-dim BAAI/bge-base & Qdrant/bm25
+│           ├── qdrant_store.py      # Embedded Qdrant client, dual-vector collections & RRF search
+│           ├── graph_rag.py         # Entity extraction, multi-hop graph expansion & score fusion
 │           ├── graphify_retriever.py# Graphify AST indexing interface
-│           └── retrieval_engine.py # Hybrid Graphify + Neo4j evidence retrieval
+│           └── retrieval_engine.py  # Unified retrieval engine routing to Qdrant Graph RAG
 ├── frontend/
 │   ├── package.json                # React 18, D3.js, Axios, Three.js dependencies
 │   ├── public/                     # Static HTML template & icons
@@ -694,6 +732,11 @@ Run the backend automated test suite:
 cd backend
 .\venv\Scripts\activate
 pytest tests/
+```
+
+Run the Qdrant Graph RAG unit and integration tests:
+```bash
+pytest tests/test_qdrant_graph_rag.py -v
 ```
 
 Run MCP server tests:
