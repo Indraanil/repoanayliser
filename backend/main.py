@@ -279,10 +279,13 @@ async def list_snapshots(repo_id: str):
         result = session.run("""
             MATCH (r:Repository {repo_id: $repo_id})-[:HAS_SNAPSHOT]->(s:Snapshot)
             OPTIONAL MATCH (s)-[:ANALYZED_FILE]->(f:File)
-            WITH s, COUNT(DISTINCT f) as file_count
+            OPTIONAL MATCH (c:Commit {commit_hash: s.commit_hash})
+            WITH s, c, COUNT(DISTINCT f) as file_count
             RETURN s.snapshot_id as snapshot_id,
                    toString(s.created_at) as created_at,
                    s.commit_hash as commit_hash,
+                   c.message as commit_message,
+                   c.author_email as commit_author,
                    s.total_files as total_files,
                    s.total_deps as total_deps,
                    s.avg_coupling as avg_coupling,

@@ -54,7 +54,21 @@ function SnapshotComparison({ repoId }) {
         {snapshots.map((snapshot, idx) => (
           <div key={snapshot.snapshot_id} style={styles.snapshotCard}>
             <div style={styles.snapshotHeader}>
-              <span style={styles.snapshotNumber}>#{snapshots.length - idx}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={styles.snapshotNumber}>#{snapshots.length - idx}</span>
+                {snapshot.commit_hash ? (
+                  <span style={styles.commitBadge} title={snapshot.commit_message || snapshot.commit_hash}>
+                    <span style={{ opacity: 0.6 }}>⎇</span> {snapshot.commit_hash.slice(0, 7)}
+                    {snapshot.commit_message && (
+                      <span style={styles.commitMessageInline}>
+                        {' '}• {snapshot.commit_message.length > 40 ? `${snapshot.commit_message.slice(0, 37)}...` : snapshot.commit_message}
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span style={styles.uncommittedBadge}>Working Tree</span>
+                )}
+              </div>
               <span style={styles.snapshotDate}>
                 {new Date(snapshot.created_at).toLocaleString()}
               </span>
@@ -99,6 +113,20 @@ function SnapshotComparison({ repoId }) {
 
       {selectedSnapshot1 && selectedSnapshot2 && (
         <div style={styles.compareSection}>
+          <div style={styles.compareSubtext}>
+            <span>Comparing: </span>
+            <strong>
+              {snapshots.find(s => s.snapshot_id === selectedSnapshot1)?.commit_hash 
+                ? `⎇ ${snapshots.find(s => s.snapshot_id === selectedSnapshot1).commit_hash.slice(0, 7)}` 
+                : 'Snapshot 1'}
+            </strong>
+            <span style={{ margin: '0 8px', color: 'var(--text-muted)' }}>➔</span>
+            <strong>
+              {snapshots.find(s => s.snapshot_id === selectedSnapshot2)?.commit_hash 
+                ? `⎇ ${snapshots.find(s => s.snapshot_id === selectedSnapshot2).commit_hash.slice(0, 7)}` 
+                : 'Snapshot 2'}
+            </strong>
+          </div>
           <button onClick={compareSelected} style={styles.compareBtn}>
             Compare Snapshots
           </button>
@@ -138,7 +166,21 @@ function SnapshotComparison({ repoId }) {
           {/* Metrics Comparison */}
           <div style={styles.comparisonGrid}>
             <div style={styles.comparisonCard}>
-              <h5>📸 Snapshot 1</h5>
+              <div style={styles.cardHeaderFlex}>
+                <h5 style={{ margin: 0 }}>📸 Snapshot 1</h5>
+                {comparison.snapshot1.commit_hash ? (
+                  <span style={styles.commitBadge} title={comparison.snapshot1.commit_message || comparison.snapshot1.commit_hash}>
+                    <span style={{ opacity: 0.6 }}>⎇</span> {comparison.snapshot1.commit_hash.slice(0, 7)}
+                  </span>
+                ) : (
+                  <span style={styles.uncommittedBadge}>Working Tree</span>
+                )}
+              </div>
+              {comparison.snapshot1.commit_message && (
+                <div style={styles.comparisonCommitMsg} title={comparison.snapshot1.commit_message}>
+                  "{comparison.snapshot1.commit_message}"
+                </div>
+              )}
               <div style={styles.comparisonDate}>{comparison.snapshot1.date}</div>
               <div style={styles.comparisonMetrics}>
                 <div>Files: <strong>{comparison.snapshot1.files}</strong></div>
@@ -150,6 +192,13 @@ function SnapshotComparison({ repoId }) {
 
             <div style={styles.deltaCard}>
               <h5>Changes (Δ)</h5>
+              {comparison.snapshot1.commit_hash && comparison.snapshot2.commit_hash && (
+                <div style={styles.deltaCommitFlow}>
+                  <span>{comparison.snapshot1.commit_hash.slice(0, 7)}</span>
+                  <span>➔</span>
+                  <span>{comparison.snapshot2.commit_hash.slice(0, 7)}</span>
+                </div>
+              )}
               <div style={styles.deltaMetrics}>
                 <div style={getDeltaStyle(comparison.changes.file_delta)}>
                   Files: <strong>{formatDelta(comparison.changes.file_delta)}</strong>
@@ -167,7 +216,21 @@ function SnapshotComparison({ repoId }) {
             </div>
 
             <div style={styles.comparisonCard}>
-              <h5>📸 Snapshot 2</h5>
+              <div style={styles.cardHeaderFlex}>
+                <h5 style={{ margin: 0 }}>📸 Snapshot 2</h5>
+                {comparison.snapshot2.commit_hash ? (
+                  <span style={styles.commitBadge} title={comparison.snapshot2.commit_message || comparison.snapshot2.commit_hash}>
+                    <span style={{ opacity: 0.6 }}>⎇</span> {comparison.snapshot2.commit_hash.slice(0, 7)}
+                  </span>
+                ) : (
+                  <span style={styles.uncommittedBadge}>Working Tree</span>
+                )}
+              </div>
+              {comparison.snapshot2.commit_message && (
+                <div style={styles.comparisonCommitMsg} title={comparison.snapshot2.commit_message}>
+                  "{comparison.snapshot2.commit_message}"
+                </div>
+              )}
               <div style={styles.comparisonDate}>{comparison.snapshot2.date}</div>
               <div style={styles.comparisonMetrics}>
                 <div>Files: <strong>{comparison.snapshot2.files}</strong></div>
@@ -373,6 +436,13 @@ const styles = {
   riskFileName: { fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' },
   riskBadge: { padding: '3px 10px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, fontFamily: 'var(--font-mono)' },
   riskFileDetails: { display: 'flex', gap: '14px', fontSize: '12px', color: 'var(--text-muted)' },
+  commitBadge: { display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', background: 'rgba(56, 189, 248, 0.12)', color: '#38bdf8', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.3)', fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 600 },
+  commitMessageInline: { color: 'var(--text-secondary)', fontWeight: 400, fontFamily: 'var(--font-sans)', fontSize: '11px' },
+  uncommittedBadge: { display: 'inline-flex', alignItems: 'center', padding: '2px 8px', background: 'var(--bg-card)', color: 'var(--text-dim)', borderRadius: '12px', border: '1px solid var(--border)', fontSize: '11px', fontStyle: 'italic' },
+  compareSubtext: { marginBottom: '12px', fontSize: '13px', color: 'var(--text-secondary)' },
+  cardHeaderFlex: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' },
+  comparisonCommitMsg: { fontSize: '12px', color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: '8px', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  deltaCommitFlow: { fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginBottom: '8px', display: 'flex', gap: '6px', alignItems: 'center' },
 };
 
 export default SnapshotComparison;

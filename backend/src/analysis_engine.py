@@ -1266,12 +1266,16 @@ class AnalysisEngine:
             result = session.run("""
                 MATCH (s1:Snapshot {snapshot_id: $snapshot1})
                 MATCH (s2:Snapshot {snapshot_id: $snapshot2})
+                OPTIONAL MATCH (c1:Commit {commit_hash: s1.commit_hash})
+                OPTIONAL MATCH (c2:Commit {commit_hash: s2.commit_hash})
                 RETURN s1.patterns as p1, s1.coupling as c1, s1.avg_coupling as ac1,
                        s1.cycle_count as cc1, s1.total_files as tf1, s1.total_deps as td1,
                        s1.arch_macro as macro1, s1.arch_meso as meso1,
+                       s1.commit_hash as commit1, c1.message as msg1,
                        s2.patterns as p2, s2.coupling as c2, s2.avg_coupling as ac2,
                        s2.cycle_count as cc2, s2.total_files as tf2, s2.total_deps as td2,
                        s2.arch_macro as macro2, s2.arch_meso as meso2,
+                       s2.commit_hash as commit2, c2.message as msg2,
                        toString(s1.created_at) as date1, toString(s2.created_at) as date2
                 """, snapshot1=snapshot1, snapshot2=snapshot2)
             record = result.single()
@@ -1417,6 +1421,8 @@ class AnalysisEngine:
             return {
                 "snapshot1": {
                     "id": snapshot1[:8],
+                    "commit_hash": record.get('commit1'),
+                    "commit_message": record.get('msg1'),
                     "date": record['date1'],
                     "files": record['tf1'],
                     "dependencies": record['td1'],
@@ -1427,6 +1433,8 @@ class AnalysisEngine:
                 },
                 "snapshot2": {
                     "id": snapshot2[:8],
+                    "commit_hash": record.get('commit2'),
+                    "commit_message": record.get('msg2'),
                     "date": record['date2'],
                     "files": record['tf2'],
                     "dependencies": record['td2'],
