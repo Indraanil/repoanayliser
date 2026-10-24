@@ -11,7 +11,7 @@
   <a href="https://tree-sitter.github.io/tree-sitter/"><img src="https://img.shields.io/badge/AST_Parsing-Tree--sitter-1e293b?style=for-the-badge" alt="Tree-sitter"></a>
   <a href="https://networkx.org/"><img src="https://img.shields.io/badge/Graph_Algorithms-NetworkX-38bdf8?style=for-the-badge" alt="NetworkX"></a>
   <a href="https://groq.com/"><img src="https://img.shields.io/badge/LLM_Reasoning-Groq_Llama_3.3_70B-f97316?style=for-the-badge" alt="Groq"></a>
-  <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/Frontend-React_18_%2B_D3.js-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React"></a>
+  <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/Frontend-React_18_%2B_D3.js_%2B_Three.js-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge" alt="License: MIT"></a>
 </p>
 
@@ -19,9 +19,10 @@
   <a href="#-quickstart--installation"><b>⚡ Quickstart</b></a> •
   <a href="#-model-context-protocol-mcp-server"><b>🤖 MCP Server & AI Agents</b></a> •
   <a href="#-live-inspector-hud"><b>📊 Live Inspector HUD</b></a> •
+  <a href="#-interactive-dashboard-tour-12-views"><b>🖥️ 12-View Dashboard</b></a> •
   <a href="#-core-capabilities--feature-matrix"><b>✨ Feature Matrix</b></a> •
   <a href="#-core-architectural-subsystems"><b>🔬 Core Subsystems</b></a> •
-  <a href="#-complete-rest-api-reference"><b>📡 REST API</b></a>
+  <a href="#-complete-rest-api-reference"><b>📡 REST API Reference</b></a>
 </p>
 
 ---
@@ -31,12 +32,12 @@
 - [📌 Problem Statement & Breakthrough](#-problem-statement--breakthrough)
 - [💡 Dual-Track System Architecture](#-dual-track-system-architecture)
 - [✨ Core Capabilities & Feature Matrix](#-core-capabilities--feature-matrix)
+- [🖥️ Interactive Dashboard Tour (12 Views)](#-interactive-dashboard-tour-12-views)
 - [🤖 Model Context Protocol (MCP) Server](#-model-context-protocol-mcp-server)
   - [The AI Context Dilemma & The Graph Advantage](#the-ai-context-dilemma--the-graph-advantage)
-  - [MCP Server Architecture](#mcp-server-architecture)
-  - [Available MCP Tools Reference](#available-mcp-tools-reference)
+  - [Available MCP Tools Reference (11 Tools)](#available-mcp-tools-reference-11-tools)
   - [Agent Integration Guides (VS Code, Cursor, Claude, Antigravity, Windsurf, Codex)](#agent-integration-guides)
-  - [Recommended First-Use Agent Flow](#recommended-first-use-agent-flow)
+  - [Recommended First-Use Agent Workflow](#recommended-first-use-agent-workflow)
   - [Real-Time Live Sync & Watchdog Engine](#real-time-live-sync--watchdog-engine)
 - [📊 Live Inspector HUD](#-live-inspector-hud)
 - [🔬 Core Architectural Subsystems](#-core-architectural-subsystems)
@@ -47,7 +48,9 @@
   - [5. Change Impact & Blast Radius Simulation](#5-change-impact--blast-radius-simulation)
   - [6. Cryptographic Snapshot Lineage & Cross-Commit Auditing](#6-cryptographic-snapshot-lineage--cross-commit-auditing)
   - [7. Hybrid Semantic Synthesis (LLM Reasoning + Graphify)](#7-hybrid-semantic-synthesis-llm-reasoning--graphify)
-  - [8. Graph RAG & Embedded Hybrid Vector Store (Qdrant + Hugging Face 768-dim + BM25)](#8-graph-rag--embedded-hybrid-vector-store-qdrant--hugging-face-768-dim--bm25)
+  - [8. Graph RAG & Embedded Hybrid Vector Store (Qdrant + BAAI/bge-base + BM25)](#8-graph-rag--embedded-hybrid-vector-store-qdrant--baaibge-base--bm25)
+  - [9. Code Health & Dead Code Discovery](#9-code-health--dead-code-discovery)
+  - [10. Cinematic Story Experience Engine](#10-cinematic-story-experience-engine)
 - [⚡ Quickstart & Installation](#-quickstart--installation)
   - [Prerequisites](#prerequisites)
   - [1. Clone Repository](#1-clone-repository)
@@ -68,7 +71,7 @@
 
 ## 📌 Problem Statement & Breakthrough
 
-Modern software systems accumulate thousands of evolving source files, causing architectural intent to drift, module boundaries to blur, and circular coupling to quietly proliferate.
+Modern software systems accumulate thousands of evolving source files. As codebases scale, architectural intent drifts, module boundaries blur, and circular coupling proliferates unseen.
 
 ```
        WITHOUT ARCHITECH                                   WITH ARCHITECH
@@ -81,21 +84,24 @@ Modern software systems accumulate thousands of evolving source files, causing a
 ```
 
 ### The Human Challenge
-Engineering teams suffer from slow developer onboarding, undocumented legacy architecture, unintended circular dependency chains, and risky refactoring where touching one file silently breaks distant modules.
+Engineering teams suffer from slow developer onboarding, undocumented legacy architecture, hidden circular dependency loops, and high-risk refactoring where touching one file silently breaks distant modules across the codebase.
 
 ### The AI Coding Agent Challenge
-AI coding assistants (Claude Code, Cursor, GitHub Copilot, Antigravity) are forced to read raw files blindly or ingest thousands of lines of context. This leads to **context window bloat**, **prohibitive token costs**, and **hallucinations** regarding class hierarchies, imported utilities, and method caller relationships.
+Autonomous coding assistants (Claude Code, Cursor, GitHub Copilot, Google Antigravity, Windsurf) are forced to read raw files blindly or ingest thousands of lines of code into their context windows. This results in:
+* **Context Window Bloat & Cost:** Draining 30,000–80,000+ tokens per query.
+* **Architectural Hallucinations:** Inventing non-existent class hierarchies, import chains, or method caller relationships.
+* **Blind Refactoring:** Suggesting changes without visibility into systemic reverse dependencies or cascading blast radiuses.
 
 ### The ARCHITECH Breakthrough
-**ARCHITECH** transforms flat source code into a queryable, multi-dimensional **Knowledge Graph** served through two synchronized tracks:
-1. **Interactive Visual Dashboard (React 18 + D3.js):** For human architects to inspect dependency graphs, explore circular cycles, evaluate pattern alignment, simulate blast radius, and compare historical snapshot diffs.
-2. **Model Context Protocol (MCP) Server (FastMCP stdio):** For AI coding agents to dynamically query architecture, inspect caller chains, simulate change impact, and receive incremental AST updates as files change in real time.
+**ARCHITECH** transforms flat source code into an enriched, multi-dimensional **Knowledge Graph** served through two synchronized tracks:
+1. **Interactive Visual Dashboard (React 18 + D3.js + Three.js):** 12 interactive engineering views for humans to explore dependency graphs, trace circular cycles, inspect 8 architectural patterns, simulate blast radiuses, evaluate dead code, and diff historical commit snapshots.
+2. **Model Context Protocol (MCP) Server (FastMCP stdio):** An industry-standard JSON-RPC server exposing 11 precision tools that allow AI coding agents to dynamically query architecture, locate callers, simulate change impacts, and receive incremental AST updates in **<100ms** on file save.
 
 ---
 
 ## 💡 Dual-Track System Architecture
 
-ARCHITECH executes across two parallel tracks converging on a unified, high-speed **Shared Knowledge Nexus** (Neo4j Graph Database + SQLite State Engine):
+ARCHITECH converges both human developers and autonomous AI coding agents on a unified, high-speed **Shared Knowledge Nexus** (Neo4j Graph Database + Embedded Qdrant Vector Store + SQLite State Engine):
 
 ```
                                   ┌─────────────────────────────────────────┐
@@ -139,10 +145,12 @@ ARCHITECH executes across two parallel tracks converging on a unified, high-spee
        [ TRACK 1: HUMAN DEVELOPER ]                                 [ TRACK 2: AI CODING AGENT ]
 ┌───────────────────────────────────────────┐               ┌───────────────────────────────────────────┐
 │ Interactive Web Dashboard (React + D3.js) │               │ Model Context Protocol (MCP) Server       │
-│ • Force-Directed Dependency & Call Graphs │               │ • Stdio JSON-RPC FastMCP Engine           │
-│ • 8 Design Pattern Confidence Gauges      │               │ • 11 Precision Graph Tools (<2k tokens)   │
-│ • Interactive Blast Radius Simulator      │               │ • Real-Time Watchfiles Live Sync (<100ms) │
-│ • Cross-Commit Architectural Diffs        │               │ • Claude, Cursor, Copilot, Antigravity    │
+│ • 12 Dedicated Architectural Workspaces   │               │ • Stdio JSON-RPC FastMCP Engine           │
+│ • 6-Chapter 3D Cinematic Story Mode       │               │ • 11 Precision Graph Tools (<1.5k tokens) │
+│ • Force-Directed Dependency & Call Graphs │               │ • Real-Time Watchfiles Live Sync (<100ms) │
+│ • 8 Design Pattern Confidence Gauges      │               │ • Claude, Cursor, Copilot, Antigravity    │
+│ • Interactive Blast Radius Simulator      │               │ • Live Telemetry HUD (:8000/inspector)    │
+│ • Cross-Commit Architectural Diffs        │               │ • Zero Source Code Exfiltration           │
 └───────────────────────────────────────────┘               └───────────────────────────────────────────┘
                          │                                                           │
                          └─────────────────────────────┬─────────────────────────────┘
@@ -158,7 +166,7 @@ ARCHITECH executes across two parallel tracks converging on a unified, high-spee
 
 ## ✨ Core Capabilities & Feature Matrix
 
-ARCHITECH provides 10 core architectural recovery modules designed for dual-mode human and AI-assisted workflows:
+ARCHITECH provides 12 core architectural recovery and analysis modules designed for dual-mode human and AI-assisted workflows:
 
 | Module / Capability | Primary Responsibility | Technical Subsystem & Output |
 | :--- | :--- | :--- |
@@ -171,19 +179,50 @@ ARCHITECH provides 10 core architectural recovery modules designed for dual-mode
 | **🧩 Pattern Detection** | Heuristic classification across 8 patterns (Layered, MVC, Hexagonal, Event-Driven, etc.). | Multi-signal heuristics (directory stems, AST signatures, imports). |
 | **📈 Coupling & Cycles** | Computes Fan-In ($C_a$), Fan-Out ($C_e$), Instability ($I$), and enumerates circular dependency cycles. | NetworkX Johnson's circuit algorithm (`nx.simple_cycles`). |
 | **💥 Blast Radius Simulator** | Interactive change impact preview: 1-hop direct, 2–3 hop cascading, and function breaking surface. | Neo4j path traversal + weighted risk severity algorithm (0–100). |
+| **🔍 Code Health & Unused** | Evidence-backed detection of unused files, uncalled functions, and duplicate file names. | Topological graph filtering with zero afferent edge isolation. |
 | **🕒 Cross-Commit Diffing** | Compares any two historical commit snapshots to surface architectural drift and regression deltas. | Delta engine computing $\Delta \text{avg\_coupling}$, $\Delta \text{cycles}$, and pattern shifts. |
+| **🎬 Cinematic Story Mode** | 6-chapter audio-visual interactive story illustrating codebase complexity and transformation. | Three.js 3D canvas + procedural code labyrinth + interactive stickman. |
+
+---
+
+## 🖥️ Interactive Dashboard Tour (12 Views)
+
+The ARCHITECH web frontend (`http://localhost:3000`) provides 12 specialized views designed for deep code exploration:
+
+```
+[▶ Story Experience] [△ Architecture] [⬢ File Graph] [◎ Blast Radius] [◬ Patterns] [⬡ Coupling]
+[ƒ Functions]        [○ Health]       [⬣ Fn Graph]   [▦ Repos]        [◈ Analyze]   [❐ Snapshots]
+```
+
+1. **🎬 Story Experience (`CinematicStory.js`):** An interactive 6-chapter visual narrative featuring a procedural 3D code labyrinth, stickman developer animation, live dependency overlays, and a product capability showcase.
+2. **📐 Architecture View (`ArchitectureView.js`):** 3-tier architectural breakdown (Macro system architecture, Meso component boundaries, Micro critical hubs) with confidence scores, grounding evidence, and Markdown export.
+3. **🕸️ File Dependency Graph (`DependencyGraph.js`):** Force-directed D3.js graph of repository files. Supports node search, zoom/pan, directional arrow paths, and instant incoming/outgoing dependency inspection.
+4. **💥 Blast Radius Simulator (`BlastRadius.js`):** Interactive change simulator. Select any file and simulate `Modify`, `Move`, or `Delete` actions to inspect direct 1-hop dependents, 2–3 hop cascading ripples, broken function callers, and an objective 0–100 risk score.
+5. **🧩 Pattern Detection (`PatternDetection.js`):** Comprehensive breakdown of 8 software architecture patterns. Displays confidence gauges, detected architectural layers, matching files, and framework evidence.
+6. **📈 Coupling & Cycles (`CouplingAnalysis.js`):** Analyzes architectural stability. Calculates Afferent Coupling ($C_a$), Efferent Coupling ($C_e$), Instability Index ($I$), and isolates circular dependency cycles via Johnson's circuit algorithm.
+7. **ƒ Function Analysis (`FunctionAnalysis.js`):** Search and drill down into any indexed function across the codebase. Displays start/end line numbers, file location, incoming callers, and AI-synthesized function role explanations.
+8. **🔍 Code Health & Unused (`CodeHealth.js`):** Evidence-backed dead code detection identifying candidate unused files (0 afferent dependencies), uncalled functions (0 caller edges), and duplicate file naming across packages.
+9. **⬣ Function Call Graph (`FunctionGraph.js`):** Force-directed network visualization of function invocations across file boundaries, showing multi-hop caller-callee call paths.
+10. **▦ Repository Manager (`RepositoryManager.js`):** Multi-repository workspace hub. Switch active projects, trigger vector re-indexing, inspect snapshot histories, and run cryptographic SHA-256 tamper-detection audits.
+11. **◈ Analyze (`AnalyzeRepo.js`):** Ingestion console supporting both native OS local folder selection (`/browse-folder`) and remote GitHub repository URL cloning with asynchronous job status polling.
+12. **❐ Snapshot Comparison (`SnapshotComparison.js`):** Cross-commit architectural diffing engine. Compare any two snapshots to view deltas in file count, coupling metrics, circular cycles, and architectural pattern drift.
 
 ---
 
 ## 🤖 Model Context Protocol (MCP) Server
 
-ARCHITECH includes a production-grade, local **Model Context Protocol (MCP)** stdio server located in `mcp-server/`. It connects your favorite AI coding assistant directly to the ARCHITECH repository knowledge graph.
+ARCHITECH includes a production-ready, local **Model Context Protocol (MCP)** stdio server located in `mcp-server/`. It connects your favorite AI coding assistant directly to the ARCHITECH repository knowledge graph.
 
 ### The AI Context Dilemma & The Graph Advantage
 
-When an AI coding assistant attempts to understand or refactor code in large projects:
-* **The Raw File Approach:** Reading files into LLM context costs **30,000 to 80,000+ tokens**, hits rate limits, and frequently misses indirect method dispatches.
-* **The ARCHITECH MCP Advantage:** The assistant invokes bounded graph queries (`get_file_context`, `get_function_context`, `get_change_impact`), receiving an exact, structured slice in **<20ms** consuming **under 1,500 tokens**.
+| Evaluation Dimension | Standard AI Coding Assistant | With ARCHITECH MCP Server |
+| :--- | :--- | :--- |
+| **Context Ingestion** | 30,000 – 80,000+ raw code tokens | **< 1,500 structured graph tokens** |
+| **Query Latency** | 5 – 25 seconds LLM ingestion time | **< 20ms deterministic Cypher query** |
+| **Token Savings** | 0% (full context exhaustion) | **Up to 16,000 tokens conserved per query** |
+| **Caller Accuracy** | Frequent hallucinations on indirect calls | **100% deterministic AST receiver dispatch** |
+| **Refactoring Safety** | Blind file edits without blast radius visibility | **Pre-commit 1–3 hop blast radius simulation** |
+| **Local File Edits** | Requires complete re-indexing | **< 100ms incremental graph sync on file save** |
 
 ```
 ┌────────────────────────┐                   ┌────────────────────────┐
@@ -199,11 +238,11 @@ When an AI coding assistant attempts to understand or refactor code in large pro
                              └─────────────────────┘           └─────────────────────┘
 ```
 
-### Available MCP Tools Reference
+### Available MCP Tools Reference (11 Tools)
 
 ARCHITECH provides **11 specialized tools** exposed via the Model Context Protocol:
 
-| Tool Name | Type | Key Arguments | Est. Tokens Saved | Description |
+| Tool Name | Annotation | Key Arguments | Est. Tokens Saved | Description |
 | :--- | :---: | :--- | :---: | :--- |
 | `list_repositories` | `Read-Only` | `query`, `cursor`, `limit` | ~1,200 | Lists indexed repositories, snapshot IDs, commit hashes, and file counts. |
 | `analyze_repository`| `Analyze` | `source`, `source_kind` (`"local"` \| `"git"`) | Full Run | Initiates full AST extraction, graph indexing, and pattern analysis. |
@@ -230,6 +269,7 @@ To integrate ARCHITECH with your preferred coding assistant, configure the stdio
 
 Create or edit `.vscode/mcp.json` in your workspace (or `.mcp.json` in root):
 
+**Windows:**
 ```json
 {
   "servers": {
@@ -243,7 +283,21 @@ Create or edit `.vscode/mcp.json` in your workspace (or `.mcp.json` in root):
   }
 }
 ```
-*(On macOS/Linux, replace `.venv/Scripts/python.exe` with `.venv/bin/python`)*
+
+**macOS / Linux:**
+```json
+{
+  "servers": {
+    "architech": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/mcp-server/.venv/bin/python",
+      "args": [
+        "${workspaceFolder}/mcp-server/server.py"
+      ]
+    }
+  }
+}
+```
 
 In GitHub Copilot Chat, ARCHITECH tools will automatically appear in the tool picker.
 
@@ -276,7 +330,12 @@ Alternatively, add to your Cursor `mcp.json`:
 ```bash
 claude mcp add --transport stdio architech -- <PATH_TO_REPO>/mcp-server/.venv/Scripts/python.exe <PATH_TO_REPO>/mcp-server/server.py
 ```
-Verify with `claude mcp list`.
+*(On macOS/Linux, use `.venv/bin/python`)*
+
+Verify with:
+```bash
+claude mcp list
+```
 
 **Claude Desktop:**
 Add to `claude_desktop_config.json`:
@@ -336,9 +395,9 @@ args = ["<PATH_TO_REPO>/mcp-server/server.py"]
 
 ---
 
-### Recommended First-Use Agent Flow
+### Recommended First-Use Agent Workflow
 
-When paired with an AI coding assistant, ARCHITECH enables an evidence-grounded investigation workflow:
+When paired with an AI coding assistant, ARCHITECH enables an evidence-grounded investigation loop:
 
 ```
 Step 1: DISCOVER
@@ -501,7 +560,7 @@ To generate actionable, grounded architectural insights rather than superficial 
 
 ---
 
-### 8. Graph RAG & Embedded Hybrid Vector Store (Qdrant + Hugging Face 768-dim + BM25)
+### 8. Graph RAG & Embedded Hybrid Vector Store (Qdrant + BAAI/bge-base + BM25)
 To empower sub-millisecond semantic retrieval across dense codebases without external vector cloud subscriptions or API keys, ARCHITECH embeds a dual-vector **Qdrant** database directly within the backend runtime:
 
 * **Dual-Vector Embedding Architecture:**
@@ -516,6 +575,22 @@ To empower sub-millisecond semantic retrieval across dense codebases without ext
 * **Zero-Cloud Persistent On-Disk Storage:**
   * Stored embedded in `backend/.data/qdrant/` using SQLite storage engines and WAL journals.
   * Vectors persist across server reboots. Automatically validates and syncs missing embeddings when loading cached snapshots with zero user intervention.
+
+---
+
+### 9. Code Health & Dead Code Discovery
+ARCHITECH runs continuous structural auditing over the graph topology to discover code bloat, architectural decay, and dead code:
+* **Unused Files:** Files with 0 afferent dependency edges (`[:DEPENDS_ON]`) that are not entry points or tests.
+* **Uncalled Functions:** Defined functions that have 0 incoming caller edges (`[:CALLS]`), complete with exact source line coordinates.
+* **Duplicate File Names:** Identifies non-unique file stems across disparate directories, alerting teams to copy-paste architectures or ambiguous imports.
+
+---
+
+### 10. Cinematic Story Experience Engine
+To bridge technical architectural models with intuitive human understanding, ARCHITECH provides an interactive audio-visual story mode:
+* **Three.js WebGL Labyrinth:** Generates a 3D isometric representation of code complexity, where files become towering monolithic pillars and dependencies become glowing inter-nodal bridges.
+* **Interactive Stickman Narrative:** Animates a developer navigating through 6 chapters of architectural evolution—from spaghetti code confusion to modular clarity.
+* **Live Dependency Canvas Overlay:** Seamlessly transitions the 3D cinematic camera into the live interactive D3.js force-directed graph.
 
 ---
 
@@ -538,73 +613,104 @@ cd repoanayliser
 ---
 
 ### 2. Environment Configuration
-Create or configure `backend/.env`:
+Create `backend/.env`:
 ```dotenv
+# Neo4j Database Configuration
 NEO4J_URI=neo4j://127.0.0.1:7687
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=your_secure_password
 
+# Groq Cloud API Configuration (for Architectural Synthesis)
 GROQ_API_KEY=gsk_your_groq_api_key_here
 GROQ_MODEL=openai/gpt-oss-120b
+
+# Embedded Qdrant & Embedding Settings (Defaults are local-ready)
+QDRANT_PATH=./.data/qdrant
+QDRANT_COLLECTION_NAME=architech_graph_rag
+EMBEDDING_MODEL=BAAI/bge-base-en-v1.5
+EMBEDDING_DIM=768
+SPARSE_MODEL=Qdrant/bm25
 ```
 
 ---
 
 ### 3. Start Neo4j Database
-1. Launch **Neo4j Desktop** (or run `docker run -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/your_secure_password neo4j:5`).
-2. Verify that Bolt is active on port `7687`.
+
+**Option A: Docker (Recommended)**
+```bash
+docker run -d \
+  --name architech-neo4j \
+  -p 7474:7474 -p 7687:7687 \
+  -e NEO4J_AUTH=neo4j/your_secure_password \
+  neo4j:5
+```
+
+**Option B: Neo4j Desktop**
+1. Create a new Local DBMS with version 5.x.
+2. Set password matching `NEO4J_PASSWORD`.
+3. Start the DBMS and verify Bolt is running on port `7687`.
 
 ---
 
 ### 4. Backend Setup & Startup
+
+**Windows (PowerShell):**
 ```powershell
-# Navigate to backend directory
 cd backend
-
-# Create and activate Python virtual environment
 python -m venv venv
-.\venv\Scripts\activate   # On Linux/macOS: source venv/bin/activate
-
-# Install dependencies
+.\venv\Scripts\activate
 pip install --upgrade pip
 pip install -r requirements.txt
-
-# Run the FastAPI server
 python main.py
 ```
-> The backend server starts at `http://localhost:8000`.
+
+**macOS / Linux (Bash):**
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+python main.py
+```
+> The FastAPI backend server will start at `http://localhost:8000`.
 
 ---
 
 ### 5. Frontend Setup & Startup
+
 In a separate terminal:
-```powershell
-# Navigate to frontend directory
+```bash
 cd frontend
-
-# Install Node dependencies
 npm install
-
-# Start React development server
 npm start
 ```
-> The React dashboard opens automatically at `http://localhost:3000`.
+> The React dashboard will open automatically at `http://localhost:3000`.
 
 ---
 
 ### 6. MCP Server Setup
-The MCP server maintains an isolated virtual environment to avoid dependency conflicts:
+
+The MCP server maintains an isolated virtual environment:
+
+**Windows (PowerShell):**
 ```powershell
 cd mcp-server
 python -m venv .venv
-.\.venv\Scripts\activate   # On Linux/macOS: source .venv/bin/activate
+.\.venv\Scripts\activate
 pip install -r requirements.txt
-```
-Test the MCP server directly:
-```powershell
 python server.py
 ```
-*(The server communicates via stdio JSON-RPC; diagnostic messages output to stderr).*
+
+**macOS / Linux (Bash):**
+```bash
+cd mcp-server
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python server.py
+```
+*(The server communicates over stdio JSON-RPC; diagnostic logs are written to stderr).*
 
 ---
 
@@ -612,7 +718,7 @@ python server.py
 
 | Service | Address | Description |
 | :--- | :--- | :--- |
-| **Frontend Web Dashboard** | [http://localhost:3000](http://localhost:3000) | Interactive React + D3.js dashboard |
+| **Frontend Web Dashboard** | [http://localhost:3000](http://localhost:3000) | Interactive React + D3.js + Three.js dashboard |
 | **FastAPI REST API** | [http://localhost:8000](http://localhost:8000) | Core analysis engine & background jobs |
 | **Live MCP Inspector HUD** | [http://localhost:8000/inspector](http://localhost:8000/inspector) | Real-time tool stream and telemetry |
 | **FastAPI Swagger Docs** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive OpenAPI explorer |
@@ -622,38 +728,43 @@ python server.py
 
 ## 📡 Complete REST API Reference
 
-| HTTP Method | Route | Description |
-| :--- | :--- | :--- |
-| `POST` | `/analyze` | Clones and analyzes a remote GitHub repository in the background. |
-| `POST` | `/analyze/local` | Ingests and analyzes a local directory from the host machine. |
-| `GET` | `/status/{job_id}` | Polls status (`processing`, `completed`, `failed`) of background jobs. |
-| `GET` | `/browse-folder` | Opens native OS folder picker dialog to select local projects. |
-| `GET` | `/architecture` | Returns the synthesized 3-tier architectural report and stats. |
-| `GET` | `/patterns` | Returns detected patterns, layer breakdowns, and confidence scores. |
-| `GET` | `/coupling` | Returns high-coupling files, Fan-In/Fan-Out metrics, and cycles. |
-| `GET` | `/confidence-report` | Returns confidence scores and validation evidence for claims. |
-| `GET` | `/blast-radius/{file_path}` | Simulates change impact (Modify, Move, Delete) and risk score. |
-| `POST` | `/impact` | Returns AI semantic impact analysis for a specific file change. |
-| `GET` | `/graph/data` | Returns node and edge collections for file dependency graph. |
-| `GET` | `/graph/functions` | Returns node and edge collections for function call graph. |
-| `GET` | `/graph/function/{name}`| Returns the multi-hop call chain for a specific function. |
-| `GET` | `/functions` | Lists all indexed functions with their source files and line spans. |
-| `GET` | `/function/{name}` | Returns callers, implementation code, and LLM explanation. |
-| `GET` | `/repositories` | Lists all analyzed repositories with snapshot and file counts. |
-| `POST` | `/repository/{id}/load` | Loads a repository's cached analysis state into memory. |
-| `DELETE`| `/repository/{id}` | Deletes a repository and all associated graph nodes and snapshots. |
-| `GET` | `/repository/{id}/snapshots` | Lists historical snapshots with commit hashes and timestamps. |
-| `GET` | `/repository/{id}/compare-snapshots/{s1}/{s2}` | Performs architectural diff between two commits. |
-| `GET` | `/repository/{id}/commits` | Returns commit lineage for a repository. |
-| `GET` | `/repository/{id}/file-history` | Returns cryptographic SHA-256 version lineage for a file. |
-| `POST` | `/repository/{id}/check-integrity` | Verifies current file content against stored hash to detect tampering. |
-| `POST` | `/retrieval/search` | Hybrid semantic retrieval with Hugging Face 768-dim embeddings + Qdrant Graph RAG. |
-| `GET` | `/retrieval/search` | GET variant for query string semantic retrieval and sub-graph ranking. |
-| `GET` | `/retrieval/status` | Returns Qdrant connection status, 768-dim model metadata, and total cached points. |
-| `POST` | `/retrieval/reindex` | Triggers background vector re-indexing for an active or specified repository. |
-| `GET` | `/inspector` | Serves the interactive MCP Live Inspector and Telemetry HUD. |
-| `GET` | `/api/mcp/activity` | Returns recent AI MCP tool activity and token savings telemetry. |
-| `POST` | `/api/live-events` | Ingests real-time file-save events from MCP watchdog into HUD. |
+| Domain | Method | Route | Description |
+| :--- | :---: | :--- | :--- |
+| **Analysis** | `POST` | `/analyze` | Clones and analyzes a remote GitHub repository asynchronously. |
+| **Analysis** | `POST` | `/analyze/local` | Ingests and analyzes a local project directory from the host machine. |
+| **Analysis** | `GET` | `/status/{job_id}` | Polls status (`processing`, `completed`, `failed`) of background jobs. |
+| **Analysis** | `GET` | `/browse-folder` | Opens native OS folder picker dialog to select local projects. |
+| **Architecture** | `GET` | `/architecture` | Returns synthesized 3-tier architectural report, stats, and confidence score. |
+| **Architecture** | `GET` | `/patterns` | Returns detected patterns, layer breakdowns, and confidence scores. |
+| **Architecture** | `GET` | `/coupling` | Returns high-coupling files, Fan-In/Fan-Out metrics, and circular cycles. |
+| **Architecture** | `GET` | `/confidence-report`| Returns confidence scores and validation evidence for claims. |
+| **Blast Radius** | `GET` | `/blast-radius/{file_path}` | Simulates change impact (Modify, Move, Delete) and 0–100 risk score. |
+| **Blast Radius** | `POST` | `/impact` | Returns AI semantic impact analysis for a specific file change. |
+| **Graphs** | `GET` | `/graph/data` | Returns node and edge collections for file dependency graph. |
+| **Graphs** | `GET` | `/graph/functions` | Returns node and edge collections for function call graph. |
+| **Graphs** | `GET` | `/graph/function/{name}` | Returns the multi-hop call chain for a specific function. |
+| **Graphs** | `GET` | `/dependencies/{file_path}` | Returns direct incoming and outgoing file dependencies. |
+| **Functions** | `GET` | `/functions` | Lists all indexed functions with their source files and line spans. |
+| **Functions** | `GET` | `/function/{name}` | Returns callers, implementation code, and LLM explanation. |
+| **Code Health**| `GET` | `/code-health` | Evidence-backed candidates for unused files, uncalled functions, and duplicates. |
+| **Repositories**| `GET` | `/repositories` | Lists all analyzed repositories with snapshot and file counts. |
+| **Repositories**| `POST`| `/repository/{id}/load` | Loads a repository's cached analysis state into memory. |
+| **Repositories**| `DELETE`| `/repository/{id}` | Deletes a repository, its vector embeddings, and all graph nodes. |
+| **Snapshots** | `GET` | `/repository/{id}/snapshots` | Lists historical snapshots with commit hashes and timestamps. |
+| **Snapshots** | `GET` | `/repository/{id}/compare-snapshots/{s1}/{s2}` | Performs architectural diff between two snapshots. |
+| **Snapshots** | `DELETE`| `/repository/{id}/snapshot/{snapshot_id}` | Deletes a specific snapshot record. |
+| **Lineage** | `GET` | `/repository/{id}/commits` | Returns commit lineage for a repository. |
+| **Lineage** | `GET` | `/repository/{id}/file-history` | Returns cryptographic SHA-256 version lineage for a file. |
+| **Lineage** | `POST`| `/repository/{id}/check-integrity` | Verifies current file content against stored hash to detect tampering. |
+| **Retrieval** | `POST`| `/retrieval/search` | Hybrid semantic retrieval with Hugging Face 768-dim embeddings + Qdrant Graph RAG. |
+| **Retrieval** | `GET` | `/retrieval/search` | GET variant for query string semantic retrieval and sub-graph ranking. |
+| **Retrieval** | `GET` | `/retrieval/status` | Returns Qdrant connection status, 768-dim model metadata, and total cached points. |
+| **Retrieval** | `POST`| `/retrieval/reindex` | Triggers background vector re-indexing for an active or specified repository. |
+| **Telemetry** | `GET` | `/inspector` | Serves the interactive MCP Live Inspector and Telemetry HUD. |
+| **Telemetry** | `GET` | `/api/mcp/activity` | Returns recent AI MCP tool activity and token savings telemetry. |
+| **Telemetry** | `POST`| `/api/live-events` | Ingests real-time file-save events from MCP watchdog into HUD. |
+| **Telemetry** | `GET` | `/api/mcp/inspect` | Inspects file source code and AST symbols via MCP service. |
+| **Telemetry** | `POST`| `/api/mcp/demo-call` | Generates a simulated MCP tool execution event for showcase purposes. |
 
 ---
 
@@ -663,7 +774,7 @@ python server.py
 repoanayliser/
 ├── backend/
 │   ├── main.py                     # FastAPI REST API controller, background tasks & routes
-│   ├── requirements.txt            # Python dependencies (fastapi, neo4j, networkx, tree-sitter)
+│   ├── requirements.txt            # Python dependencies (fastapi, neo4j, networkx, tree-sitter, qdrant, fastembed)
 │   ├── setup.bat                   # Windows one-click environment setup script
 │   └── src/
 │       ├── analysis_engine.py      # Core orchestrator: coordinates parsing, graph, & caching
@@ -693,27 +804,42 @@ repoanayliser/
 │           ├── graphify_retriever.py# Graphify AST indexing interface
 │           └── retrieval_engine.py  # Unified retrieval engine routing to Qdrant Graph RAG
 ├── frontend/
-│   ├── package.json                # React 18, D3.js, Axios, Three.js dependencies
+│   ├── package.json                # React 18, D3.js, Three.js, Axios, React-Markdown
 │   ├── public/                     # Static HTML template & icons
 │   └── src/
 │       ├── App.js                  # Master application layout, navigation & state controller
+│       ├── App.css                 # Dark-mode styling, typography & HUD tokens
 │       ├── components/
 │       │   ├── AnalyzeRepo.js       # Repository input form (GitHub / Local Folder)
+│       │   ├── ArchitectureComparison.js # Architectural diff viewer
 │       │   ├── ArchitectureView.js  # Macro/Meso/Micro architecture report viewer
 │       │   ├── BlastRadius.js       # Interactive blast radius simulator with D3 graph
+│       │   ├── CodeHealth.js        # Dead code & unused candidate discovery
+│       │   ├── ConfidenceReport.js  # Evidence grounding and limitation matrix
 │       │   ├── CouplingAnalysis.js  # Coupling metrics, KPIs & circular dependency list
 │       │   ├── DependencyGraph.js   # Force-directed D3.js file-to-file dependency graph
+│       │   ├── FileVersionHistory.js# SHA-256 version timeline for individual files
 │       │   ├── FunctionAnalysis.js  # Function caller inspection & AI explanation
 │       │   ├── FunctionGraph.js     # Force-directed D3.js function call chain visualization
 │       │   ├── ImpactAnalysis.js    # AI-assisted change impact report
+│       │   ├── MarkdownContent.js   # Formatted markdown renderer
 │       │   ├── PatternDetection.js  # Detected pattern cards, gauges & layer breakdowns
 │       │   ├── RepositoryManager.js # Workspace catalog, snapshots & integrity controls
-│       │   └── SnapshotComparison.js# Cross-commit architectural diffing comparison
+│       │   ├── SearchableTreeSelect.js # Hierarchical file picker component
+│       │   ├── SnapshotComparison.js# Cross-commit architectural diffing comparison
+│       │   └── cinematic/
+│       │       ├── CinematicStory.js # 6-chapter audio-visual interactive narrative
+│       │       ├── CodeLabyrinth.js  # Three.js 3D isometric procedural labyrinth
+│       │       ├── DependencyOverlay.js # Floating topological connection overlay
+│       │       ├── ProductShowcase.js# Interactive feature showcase carousel
+│       │       ├── Stickman.js       # Canvas-based animated developer avatar
+│       │       └── cinematic.css     # Cinematic styling and keyframe animations
 │       └── services/
 │           └── api.js              # Centralized Axios REST client
 └── mcp-server/
     ├── requirements.txt            # MCP server dependencies (mcp, watchfiles, neo4j)
-    ├── server.py                   # MCP entrypoint
+    ├── server.py                   # Stdio MCP entrypoint
+    ├── backend_bridge.py           # Bridge to backend live event relay
     └── architech_mcp/
         ├── config.py               # MCP environment configuration
         ├── incremental.py          # Real-time file system watcher & incremental parser
@@ -730,8 +856,8 @@ repoanayliser/
 Run the backend automated test suite:
 ```bash
 cd backend
-.\venv\Scripts\activate
-pytest tests/
+# Activate your venv
+pytest tests/ -v
 ```
 
 Run the Qdrant Graph RAG unit and integration tests:
@@ -739,10 +865,15 @@ Run the Qdrant Graph RAG unit and integration tests:
 pytest tests/test_qdrant_graph_rag.py -v
 ```
 
+Run AST parser and TypeScript test suites:
+```bash
+pytest tests/test_typescript_analysis.py -v
+```
+
 Run MCP server tests:
 ```bash
 cd mcp-server
-.\.venv\Scripts\activate
+# Activate your .venv
 python -m unittest discover -s tests
 ```
 
@@ -755,6 +886,7 @@ python -m unittest discover -s tests
 * **Thread-Safe Memory LRU Cache:** Python `threading.Lock` and `collections.OrderedDict` guard the in-memory cache against multi-threaded request races.
 * **Process Isolation:** Local folder dialog launchers run via isolated subprocesses to avoid blocking the asynchronous FastAPI event loop.
 * **Sub-20ms Graph Retrieval:** Bounded Cypher queries ensure AI coding agents receive immediate answers without lag.
+* **Zero-Cloud Embedded Vector DB:** Qdrant embedded mode and FastEmbed ONNX run locally without external cloud subscriptions or network dependencies.
 
 ---
 
