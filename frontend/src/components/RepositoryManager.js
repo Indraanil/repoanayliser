@@ -3,6 +3,7 @@ import { api } from '../services/api';
 import { formatFilePath } from '../utils/formatters';
 import FileVersionHistory from './FileVersionHistory';
 import SnapshotComparison from './SnapshotComparison';
+import { IconCamera, IconScroll, IconUsers, IconUser, IconX } from './Icons';
 
 function RepositoryManager(props) {
   const [repositories, setRepositories] = useState([]);
@@ -158,7 +159,7 @@ function RepositoryManager(props) {
                         style={styles.deleteCancelBtn}
                         title="Cancel"
                       >
-                        ✕
+                        <IconX size={12} />
                       </button>
                     </>
                   ) : (
@@ -229,9 +230,9 @@ function RepositoryManager(props) {
           <div style={styles.tabs}>
             <button
               onClick={() => setActiveView('snapshots')}
-              style={{ ...styles.tab, ...(activeView === 'snapshots' ? styles.activeTab : {}) }}
+              style={{ ...styles.tab, ...(activeView === 'snapshots' ? styles.activeTab : {}), display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              📸 Snapshots
+              <IconCamera size={14} /> Snapshots
             </button>
             <button
               onClick={() => setActiveView('versions')}
@@ -259,7 +260,9 @@ function RepositoryManager(props) {
 
           {activeView === 'versions' && (
             <div style={styles.versionList}>
-              <h4>📜 Version History ({versions.length} versions)</h4>
+              <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <IconScroll size={16} /> Version History ({versions.length} versions)
+              </h4>
               {versions.slice(0, 20).map((v, idx) => (
                 <div key={idx} style={styles.versionCard}>
                   <div style={styles.versionHeader}>
@@ -286,10 +289,14 @@ function RepositoryManager(props) {
 
           {activeView === 'contributors' && (
             <div style={styles.contributorList}>
-              <h4>👥 Contributors ({contributors.length})</h4>
+              <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <IconUsers size={16} /> Contributors ({contributors.length})
+              </h4>
               {contributors.map((c, idx) => (
                 <div key={idx} style={styles.contributorCard}>
-                  <div style={styles.contributorName}>👤 {c.developer}</div>
+                  <div style={{ ...styles.contributorName, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <IconUser size={14} /> {c.developer}
+                  </div>
                   <div style={styles.contributorStats}>
                     <span>Files Modified: <strong>{c.files_modified}</strong></span>
                     <span>Total Versions: <strong>{c.total_versions}</strong></span>

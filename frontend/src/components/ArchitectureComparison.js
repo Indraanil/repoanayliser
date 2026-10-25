@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { formatFilePath } from '../utils/formatters';
+import { IconPlus, IconMinus, IconArrowRight } from './Icons';
 
 function ArchitectureComparison() {
   const [repos, setRepos] = useState([]);
@@ -157,10 +158,12 @@ function ArchitectureComparison() {
 
           {comparison.added_dependencies.length > 0 && (
             <details style={styles.details}>
-              <summary style={styles.summary}>➕ Added Dependencies ({comparison.added_dependencies.length})</summary>
+              <summary style={{ ...styles.summary, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconPlus size={14} style={{ color: '#22c55e' }} /> Added Dependencies ({comparison.added_dependencies.length})
+              </summary>
               {comparison.added_dependencies.slice(0, 10).map((dep, i) => (
                 <div key={i} style={styles.dep} title={`${dep[0]} → ${dep[1]}`}>
-                  {formatFilePath(dep[0], 1)} → {formatFilePath(dep[1], 1)}
+                  {formatFilePath(dep[0], 1)} <IconArrowRight size={12} style={{ margin: '0 6px', verticalAlign: '-1px' }} /> {formatFilePath(dep[1], 1)}
                 </div>
               ))}
             </details>
@@ -168,10 +171,12 @@ function ArchitectureComparison() {
 
           {comparison.removed_dependencies.length > 0 && (
             <details style={styles.details}>
-              <summary style={styles.summary}>➖ Removed Dependencies ({comparison.removed_dependencies.length})</summary>
+              <summary style={{ ...styles.summary, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconMinus size={14} style={{ color: '#f43f5e' }} /> Removed Dependencies ({comparison.removed_dependencies.length})
+              </summary>
               {comparison.removed_dependencies.slice(0, 10).map((dep, i) => (
                 <div key={i} style={styles.dep} title={`${dep[0]} → ${dep[1]}`}>
-                  {formatFilePath(dep[0], 1)} → {formatFilePath(dep[1], 1)}
+                  {formatFilePath(dep[0], 1)} <IconArrowRight size={12} style={{ margin: '0 6px', verticalAlign: '-1px' }} /> {formatFilePath(dep[1], 1)}
                 </div>
               ))}
             </details>

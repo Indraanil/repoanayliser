@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './HRPortal.css';
 import { api } from '../services/api';
+import { IconX, IconArrowRight, IconGitCommit } from './Icons';
 
 // ==============================================================================
 // Minimalist, Subtle SVG Icons (replacing neon emojis)
@@ -792,7 +793,7 @@ export default function HRPortal({ onSelectRepo, onSelectTab, onAnalyzeCommit })
                 className="hr-modal-close"
                 onClick={() => { setActiveAnalysis(null); setAnalysisError(null); }}
               >
-                ✕
+                <IconX size={14} />
               </button>
             </div>
 
@@ -930,8 +931,9 @@ export default function HRPortal({ onSelectRepo, onSelectTab, onAnalyzeCommit })
                   }}
                   title="Analyze repository architecture at this commit and store snapshot"
                 >
-                  <span style={{ fontSize: '13px' }}>◈</span>
-                  Analyze this Commit →
+                  <IconGitCommit size={14} />
+                  Analyze this Commit
+                  <IconArrowRight size={13} />
                 </button>
               )}
               <button

@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../services/api';
 import MarkdownContent from './MarkdownContent';
+import {
+  IconArrowsHorizontal,
+  IconZap,
+  IconGitBranch,
+  IconPackage,
+  IconDatabase,
+  IconGlobe,
+  IconAlertTriangle,
+  IconDot
+} from './Icons';
 
 export default function WorkflowExplorer({ repoId }) {
   const [workflows, setWorkflows] = useState([]);
@@ -109,7 +119,7 @@ export default function WorkflowExplorer({ repoId }) {
       <div style={styles.header}>
         <div>
           <div style={styles.headerTag}>
-            <span style={styles.tagIcon}>⇄</span>
+            <span style={styles.tagIcon}><IconArrowsHorizontal size={13} /></span>
             <span>APPLICATION WORKFLOW & EXECUTION PIPELINE RECOVERY</span>
           </div>
           <h2 style={styles.title}>Execution Workflow Explorer</h2>
@@ -228,7 +238,7 @@ export default function WorkflowExplorer({ repoId }) {
             </div>
           ) : !workflowData ? (
             <div style={styles.placeholderBox}>
-              <div style={styles.placeholderIcon}>⇄</div>
+              <div style={styles.placeholderIcon}><IconArrowsHorizontal size={36} /></div>
               <h3>Select a workflow to inspect its execution pipeline</h3>
               <p>Pick an entrypoint from the left panel or type a custom function name above.</p>
             </div>
@@ -316,20 +326,25 @@ export default function WorkflowExplorer({ repoId }) {
               {/* View Switcher Tabs */}
               <div style={styles.viewTabs}>
                 {[
-                  { id: 'pipeline', label: '⚡ Execution Pipeline', count: steps.length },
-                  { id: 'sequence', label: '⇄ Sequence Diagram' },
-                  { id: 'flowchart', label: '⤹ Flowchart Graph' },
-                  { id: 'sinks', label: '📦 Data Sink Footprint', count: summary.data_sinks_touched }
+                  { id: 'pipeline', label: 'Execution Pipeline', icon: <IconZap size={14} style={{ marginRight: '6px' }} />, count: steps.length },
+                  { id: 'sequence', label: 'Sequence Diagram', icon: <IconArrowsHorizontal size={14} style={{ marginRight: '6px' }} /> },
+                  { id: 'flowchart', label: 'Flowchart Graph', icon: <IconGitBranch size={14} style={{ marginRight: '6px' }} /> },
+                  { id: 'sinks', label: 'Data Sink Footprint', icon: <IconPackage size={14} style={{ marginRight: '6px' }} />, count: summary.data_sinks_touched }
                 ].map(t => (
                   <button
                     key={t.id}
                     onClick={() => setActiveViewTab(t.id)}
                     style={{
                       ...styles.viewTabBtn,
-                      ...(activeViewTab === t.id ? styles.viewTabBtnActive : {})
+                      ...(activeViewTab === t.id ? styles.viewTabBtnActive : {}),
+                      display: 'inline-flex',
+                      alignItems: 'center'
                     }}
                   >
-                    <span>{t.label}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                      {t.icon}
+                      {t.label}
+                    </span>
                     {t.count !== undefined && (
                       <span style={styles.viewTabCount}>{t.count}</span>
                     )}
@@ -451,8 +466,8 @@ export default function WorkflowExplorer({ repoId }) {
                 {activeViewTab === 'sinks' && (
                   <div style={styles.sinksWrap}>
                     <div style={styles.sinkSection}>
-                      <h4 style={styles.sinkSectionTitle}>
-                        💾 Database & Storage Sinks Touched ({summary.data_sinks?.length || 0})
+                      <h4 style={{ ...styles.sinkSectionTitle, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <IconDatabase size={16} /> Database & Storage Sinks Touched ({summary.data_sinks?.length || 0})
                       </h4>
                       <p style={styles.sinkSectionHint}>
                         Functions that persist or mutate state in databases, Neo4j, SQLite, or Qdrant vector storage.
@@ -463,7 +478,7 @@ export default function WorkflowExplorer({ repoId }) {
                         <div style={styles.sinkList}>
                           {summary.data_sinks.map((s, idx) => (
                             <div key={idx} style={styles.sinkItem}>
-                              <span style={styles.sinkIcon}>🟢</span>
+                              <span style={styles.sinkIcon}><IconDot size={10} color="#22c55e" /></span>
                               <code>{s}</code>
                             </div>
                           ))}
@@ -472,8 +487,8 @@ export default function WorkflowExplorer({ repoId }) {
                     </div>
 
                     <div style={styles.sinkSection}>
-                      <h4 style={styles.sinkSectionTitle}>
-                        🌐 External Integrations & Services ({summary.external_integrations?.length || 0})
+                      <h4 style={{ ...styles.sinkSectionTitle, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <IconGlobe size={16} /> External Integrations & Services ({summary.external_integrations?.length || 0})
                       </h4>
                       <p style={styles.sinkSectionHint}>
                         External network dependencies, Groq/LLM reasoning APIs, Git subprocesses, or 3rd-party services.
@@ -484,7 +499,7 @@ export default function WorkflowExplorer({ repoId }) {
                         <div style={styles.sinkList}>
                           {summary.external_integrations.map((ext, idx) => (
                             <div key={idx} style={styles.sinkItem}>
-                              <span style={styles.sinkIcon}>🟣</span>
+                              <span style={styles.sinkIcon}><IconDot size={10} color="#a855f7" /></span>
                               <code>{ext}</code>
                             </div>
                           ))}
@@ -493,8 +508,8 @@ export default function WorkflowExplorer({ repoId }) {
                     </div>
 
                     <div style={styles.sinkSection}>
-                      <h4 style={styles.sinkSectionTitle}>
-                        ⚠️ Structural Risk Assessment
+                      <h4 style={{ ...styles.sinkSectionTitle, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <IconAlertTriangle size={16} style={{ color: '#eab308' }} /> Structural Risk Assessment
                       </h4>
                       <div style={styles.riskCard}>
                         <div>

@@ -4,6 +4,7 @@ import Highlighter from './Highlighter';
 import SearchableTreeSelect from './SearchableTreeSelect';
 import * as d3 from 'd3';
 import { formatFilePath } from '../utils/formatters';
+import { IconAlertTriangle, IconCheck } from './Icons';
 
 export default function BlastRadius({ repoId }) {
   const [filePath, setFilePath] = useState('');
@@ -187,8 +188,18 @@ export default function BlastRadius({ repoId }) {
                       {result.structural_risk.level?.toUpperCase()}
                     </span>{` (${result.structural_risk.score}/100)`}
                   </div>
-                  <div style={styles.line}>  ↓ Fan-in: {result.structural_risk.fan_in} <span style={{ color: result.structural_risk.fan_in > 5 ? '#fb923c' : '#4ade80' }}>{result.structural_risk.fan_in > 5 ? '⚠ HIGH' : '✓'}</span></div>
-                  <div style={styles.line}>  ↑ Fan-out: {result.structural_risk.fan_out} <span style={{ color: result.structural_risk.fan_out > 5 ? '#fb923c' : '#4ade80' }}>{result.structural_risk.fan_out > 5 ? '⚠ HIGH' : '✓'}</span></div>
+                  <div style={styles.line}>
+                    {'  ↓ Fan-in: '}{result.structural_risk.fan_in}{' '}
+                    <span style={{ color: result.structural_risk.fan_in > 5 ? '#fb923c' : '#4ade80', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                      {result.structural_risk.fan_in > 5 ? <><IconAlertTriangle size={12} /> HIGH</> : <IconCheck size={12} />}
+                    </span>
+                  </div>
+                  <div style={styles.line}>
+                    {'  ↑ Fan-out: '}{result.structural_risk.fan_out}{' '}
+                    <span style={{ color: result.structural_risk.fan_out > 5 ? '#fb923c' : '#4ade80', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                      {result.structural_risk.fan_out > 5 ? <><IconAlertTriangle size={12} /> HIGH</> : <IconCheck size={12} />}
+                    </span>
+                  </div>
                   {result.structural_risk.in_cycle && <div style={styles.line}>  <span style={{ color: '#f87171' }}>CIRCULAR DEPENDENCY DETECTED (+30 risk)</span></div>}
                 </>
               )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { IconGitCommit, IconX } from './Icons';
 
 export default function AnalyzeRepo({ onAnalysisComplete, pendingCommitAnalysis, onClearPendingCommit }) {
   const [mode, setMode] = useState('github'); // 'github' | 'local'
@@ -118,8 +119,8 @@ export default function AnalyzeRepo({ onAnalysisComplete, pendingCommitAnalysis,
       {pendingCommitAnalysis && (
         <div style={styles.commitBanner} id="commit-analysis-banner">
           <div style={styles.commitBannerTop}>
-            <span style={styles.commitBadge}>
-              <span style={{ fontSize: '12px' }}>◈</span> ANALYZING COMMIT SNAPSHOT
+            <span style={{ ...styles.commitBadge, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <IconGitCommit size={13} /> ANALYZING COMMIT SNAPSHOT
             </span>
             <code style={styles.commitCode}>
               {(pendingCommitAnalysis.commit_hash || '').slice(0, 8)}
@@ -129,11 +130,11 @@ export default function AnalyzeRepo({ onAnalysisComplete, pendingCommitAnalysis,
             </span>
             {!loading && onClearPendingCommit && (
               <button
-                style={styles.cancelCommitBtn}
+                style={{ ...styles.cancelCommitBtn, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 onClick={onClearPendingCommit}
                 title="Cancel commit analysis and return to standard analysis"
               >
-                ✕ Cancel
+                <IconX size={12} /> Cancel
               </button>
             )}
           </div>

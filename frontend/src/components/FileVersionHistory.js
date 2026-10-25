@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { getFileName } from '../utils/formatters';
+import { IconCheck, IconX } from './Icons';
 
 function FileVersionHistory({ repoId }) {
   const [filePath, setFilePath] = useState('');
@@ -58,7 +59,7 @@ function FileVersionHistory({ repoId }) {
         }}>
           {integrity.status === 'intact' ? (
             <>
-              <span style={styles.icon}>✓</span>
+              <span style={{ ...styles.icon, display: 'inline-flex', alignItems: 'center' }}><IconCheck size={18} /></span>
               <div>
                 <strong>File Integrity: INTACT</strong>
                 <div style={styles.hashText}>Hash: {integrity.hash.substring(0, 32)}...</div>
@@ -66,7 +67,7 @@ function FileVersionHistory({ repoId }) {
             </>
           ) : integrity.status === 'tampered' ? (
             <>
-              <span style={styles.icon}>✗</span>
+              <span style={{ ...styles.icon, display: 'inline-flex', alignItems: 'center' }}><IconX size={18} /></span>
               <div>
                 <strong>File Integrity: TAMPERED</strong>
                 <div style={styles.hashText}>Stored: {integrity.stored_hash.substring(0, 16)}...</div>

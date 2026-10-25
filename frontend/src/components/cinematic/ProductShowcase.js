@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import { api } from '../../services/api';
+import { IconHexagon, IconZap, IconRefresh, IconArrowRight, IconLightbulb } from '../Icons';
 
 /**
  * ProductShowcase
@@ -384,34 +385,46 @@ export default function ProductShowcase({
             <button
               style={{
                 ...showcaseStyles.modeBtn,
-                ...(activeMode === 'graph' ? showcaseStyles.modeBtnActive : {})
+                ...(activeMode === 'graph' ? showcaseStyles.modeBtnActive : {}),
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
               }}
               onClick={() => { setActiveMode('graph'); }}
             >
-              ⬢ Dependency Graph
+              <IconHexagon size={14} /> Dependency Graph
             </button>
             <button
               style={{
                 ...showcaseStyles.modeBtn,
-                ...(activeMode === 'blast' ? showcaseStyles.modeBtnActive : {})
+                ...(activeMode === 'blast' ? showcaseStyles.modeBtnActive : {}),
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
               }}
               onClick={() => {
                 setActiveMode('blast');
                 computeBlast(selectedNode ? selectedNode.id : 'frontend/src/services/api.js');
               }}
             >
-              ⚡ Blast Radius Simulator
+              <IconZap size={14} /> Blast Radius Simulator
             </button>
           </div>
 
           {selectedNode && (
-            <button style={showcaseStyles.resetBtn} onClick={resetZoom}>
-              ↺ Reset Overview
+            <button
+              style={{ ...showcaseStyles.resetBtn, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              onClick={resetZoom}
+            >
+              <IconRefresh size={13} /> Reset Overview
             </button>
           )}
 
-          <button style={showcaseStyles.enterBtn} onClick={onExitToApp}>
-            Explore in Full Workspace →
+          <button
+            style={{ ...showcaseStyles.enterBtn, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            onClick={onExitToApp}
+          >
+            Explore in Full Workspace <IconArrowRight size={13} />
           </button>
         </div>
       </div>
@@ -450,23 +463,24 @@ export default function ProductShowcase({
 
             <button
               className="drawer-btn"
-              style={{ background: '#f97316', borderColor: '#ea580c', color: '#fff', fontWeight: 600 }}
+              style={{ background: '#f97316', borderColor: '#ea580c', color: '#fff', fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               onClick={() => {
                 setActiveMode('blast');
                 computeBlast(selectedNode.id);
               }}
             >
-              ⚡ Run Blast Radius Analysis
+              <IconZap size={14} /> Run Blast Radius Analysis
             </button>
 
             <button
               className="drawer-btn"
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               onClick={() => {
                 if (onSelectTab) onSelectTab('graph');
                 if (onExitToApp) onExitToApp();
               }}
             >
-              Inspect in Application Tab →
+              Inspect in Application Tab <IconArrowRight size={13} />
             </button>
           </div>
         )}
@@ -474,14 +488,18 @@ export default function ProductShowcase({
         {/* Loading Indicator */}
         {loading && (
           <div style={showcaseStyles.hintBar}>
-            <span>⚡ Ingesting live repository topology from ARCHITECH engine...</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <IconZap size={14} /> Ingesting live repository topology from ARCHITECH engine...
+            </span>
           </div>
         )}
 
         {/* Minimalist Floating Hint */}
         {!loading && (
           <div style={showcaseStyles.hintBar}>
-            <span>💡 Click any node to zoom & inspect dependencies. Drag nodes to explore topology.</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <IconLightbulb size={14} /> Click any node to zoom & inspect dependencies. Drag nodes to explore topology.
+            </span>
           </div>
         )}
       </div>

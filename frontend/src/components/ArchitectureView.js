@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { formatEvidenceText } from '../utils/formatters';
 import MarkdownContent from './MarkdownContent';
+import { IconCompass, IconDot, IconSparkles } from './Icons';
 
 export default function ArchitectureView({ repoId }) {
   const [architecture, setArchitecture] = useState(null);
@@ -43,7 +44,9 @@ export default function ArchitectureView({ repoId }) {
     return (
       <div style={s.container}>
         <div style={s.emptyWrap}>
-          <span style={{ fontSize: '36px', display: 'block', marginBottom: '12px' }}>📐</span>
+          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center', opacity: 0.8 }}>
+            <IconCompass size={42} />
+          </div>
           <p style={s.emptyTitle}>No Architecture Report Available</p>
           <p style={s.emptyHint}>Analyze a repository first to generate an architecture report</p>
         </div>
@@ -406,7 +409,7 @@ export default function ArchitectureView({ repoId }) {
         <div style={s.heroTopActions}>
           {(cached || architecture.cached) && (
             <span style={s.cacheBadge}>
-              Cached <span style={s.cacheDot}>●</span>
+              Cached <IconDot size={8} color="#22c55e" style={{ marginLeft: '4px' }} />
             </span>
           )}
           <button onClick={loadArchitecture} style={s.refreshBtn} disabled={loading}>
@@ -566,7 +569,9 @@ export default function ArchitectureView({ repoId }) {
       <div style={s.aiAnalysisCard}>
         <div style={s.aiHeader}>
           <h2 style={s.aiTitle}>AI Analysis</h2>
-          <span style={s.aiBadge}>✦ Powered by LLM</span>
+          <span style={{ ...s.aiBadge, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+            <IconSparkles size={13} /> Powered by LLM
+          </span>
         </div>
 
         <div style={s.aiBody}>

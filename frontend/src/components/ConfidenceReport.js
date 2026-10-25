@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getConfidenceReport } from '../services/api';
+import { IconTarget, IconChevronDown, IconBrain } from './Icons';
 
 const ConfidenceReport = ({ repoId }) => {
   const [report, setReport] = useState(null);
@@ -78,7 +79,9 @@ const ConfidenceReport = ({ repoId }) => {
     <div style={s.container}>
       <div style={s.titleSection}><h2 style={s.title}>Confidence & Limitations</h2><p style={s.subtitle}>How reliable is our analysis?</p></div>
       <div style={s.emptyBox}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>◉</div>
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', opacity: 0.7 }}>
+          <IconTarget size={42} />
+        </div>
         <h3 style={{ margin: '0 0 8px', color: 'var(--text-secondary)' }}>No analysis data yet</h3>
         <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 13 }}>Analyze a repository first to see confidence results.</p>
       </div>
@@ -144,14 +147,18 @@ const ConfidenceReport = ({ repoId }) => {
                 </div>
                 <div style={s.claimRight}>
                   <ConfidenceRing value={claim.confidence} size={48} strokeWidth={4} />
-                  <span style={{ ...s.expandArrow, transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+                  <span style={{ ...s.expandArrow, transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', display: 'inline-flex', alignItems: 'center' }}>
+                    <IconChevronDown size={14} />
+                  </span>
                 </div>
               </div>
               <ConfidenceBar value={claim.confidence} />
               {isExpanded && (
                 <div style={s.claimDetails}>
                   <div style={s.detailSection}>
-                    <div style={s.detailLabel}>🧠 Why We Think This</div>
+                    <div style={{ ...s.detailLabel, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <IconBrain size={15} /> Why We Think This
+                    </div>
                     <p style={s.detailText}>{claim.reasoning || claim.explanation || 'Pattern detected via structural analysis'}</p>
                   </div>
                   <div style={{ ...s.detailSection, ...s.warningSection }}>

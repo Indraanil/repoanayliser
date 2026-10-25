@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { IconChevronDown, IconChevronUp } from './Icons';
 
 const normalizePath = (path = '') => path.replace(/\\/g, '/').replace(/\/+$/, '');
 
@@ -93,7 +94,9 @@ export default function SearchableTreeSelect({
         {folders.map(([name, child]) => (
           <div key={`${keyPrefix}/${name}`}>
             <div style={{ ...styles.folder, paddingLeft: 10 + depth * 16 }}>
-              <span style={styles.folderIcon}>▾</span>
+              <span style={{ ...styles.folderIcon, display: 'inline-flex', alignItems: 'center' }}>
+                <IconChevronDown size={12} />
+              </span>
               <span>{name}</span>
             </div>
             {renderNode(child, depth + 1, `${keyPrefix}/${name}`)}
@@ -131,7 +134,9 @@ export default function SearchableTreeSelect({
         <span style={selected ? styles.selectedText : styles.placeholder}>
           {selected ? `${selected.label} — ${pathMap.get(normalizePath(selected.path)) || selected.path}` : placeholder}
         </span>
-        <span style={styles.chevron}>{open ? '▴' : '▾'}</span>
+        <span style={{ ...styles.chevron, display: 'inline-flex', alignItems: 'center' }}>
+          {open ? <IconChevronUp size={12} /> : <IconChevronDown size={12} />}
+        </span>
       </button>
 
       {open && !disabled && (

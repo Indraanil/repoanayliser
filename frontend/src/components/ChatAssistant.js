@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import MarkdownContent from './MarkdownContent';
 import { api } from '../services/api';
+import { IconSparkles, IconMaximize, IconMinimize, IconX } from './Icons';
 import './ChatAssistant.css';
 
 const STARTER_QUESTIONS = [
@@ -81,7 +82,7 @@ export default function ChatAssistant({ repoId, repoName }) {
                 title={isExpanded ? 'Collapse panel' : 'Expand panel'}
                 onClick={() => setIsExpanded(expanded => !expanded)}
               >
-                {isExpanded ? '↙' : '↗'}
+                {isExpanded ? <IconMinimize size={13} /> : <IconMaximize size={13} />}
               </button>
               <button
                 type="button"
@@ -89,7 +90,7 @@ export default function ChatAssistant({ repoId, repoName }) {
                 aria-label="Close project assistant"
                 onClick={() => setIsOpen(false)}
               >
-                ×
+                <IconX size={14} />
               </button>
             </div>
           </header>
@@ -163,7 +164,7 @@ export default function ChatAssistant({ repoId, repoName }) {
         aria-expanded={isOpen}
         onClick={() => setIsOpen(open => !open)}
       >
-        {isOpen ? '×' : '✦'}
+        {isOpen ? <IconX size={16} /> : <IconSparkles size={16} />}
         {!isOpen && <span>Ask about code</span>}
       </button>
     </div>

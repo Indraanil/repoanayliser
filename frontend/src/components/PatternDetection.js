@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
+import { IconDiamond } from './Icons';
 
 const PATTERNS = {
   layered: {
@@ -183,7 +184,9 @@ export default function PatternDetection({ repoId }) {
           return (
             <article key={key} style={{ ...styles.card, ...(result.detected ? {} : styles.inactiveCard) }}>
               <div style={styles.cardHeader}>
-                <div style={{ ...styles.icon, color: meta.color, background: `${meta.color}18` }}>◇</div>
+                <div style={{ ...styles.icon, color: meta.color, background: `${meta.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IconDiamond size={18} />
+                </div>
                 <div style={styles.cardHeading}>
                   <h3 style={styles.cardTitle}>{meta.name}</h3>
                   <p style={styles.description}>{meta.description}</p>

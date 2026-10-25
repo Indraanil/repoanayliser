@@ -4,6 +4,7 @@ import Stickman from './Stickman';
 import CodeLabyrinth from './CodeLabyrinth';
 import DependencyOverlay from './DependencyOverlay';
 import ProductShowcase from './ProductShowcase';
+import { IconPlay, IconPause, IconArrowRight } from '../Icons';
 
 /**
  * Chapter definitions for the cinematic narrative
@@ -348,24 +349,27 @@ export default function CinematicStory({
             className="control-btn"
             title="Previous Scene (Left Arrow)"
             onClick={() => goToScene(Math.max(1, currentScene - 1))}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            ◀
+            <IconPlay size={11} style={{ transform: 'rotate(180deg)' }} />
           </button>
 
           <button
             className={`control-btn play-btn`}
             title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
             onClick={() => setIsPlaying(p => !p)}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            {isPlaying ? '❚❚' : '▶'}
+            {isPlaying ? <IconPause size={12} /> : <IconPlay size={12} />}
           </button>
 
           <button
             className="control-btn"
             title="Next Scene (Right Arrow)"
             onClick={() => goToScene(Math.min(6, currentScene + 1))}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            ▶
+            <IconPlay size={11} />
           </button>
 
           <button
@@ -384,8 +388,9 @@ export default function CinematicStory({
             className="enter-app-btn"
             onClick={onExitToApp}
             title="Open standard workspace tabs"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
-            Open Live Workspace ↗
+            Open Live Workspace <IconArrowRight size={13} />
           </button>
         </div>
       </div>

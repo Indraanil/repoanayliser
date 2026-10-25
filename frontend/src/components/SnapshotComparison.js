@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import {
+  IconCamera,
+  IconGitBranch,
+  IconCheck,
+  IconArrowRight,
+  IconMessage,
+  IconFileText,
+  IconPlus,
+  IconMinus,
+  IconTarget,
+  IconDot
+} from './Icons';
 
 function SnapshotComparison({ repoId }) {
   const [snapshots, setSnapshots] = useState([]);
@@ -48,7 +60,9 @@ function SnapshotComparison({ repoId }) {
 
   return (
     <div style={styles.container}>
-      <h3>📸 Analysis Snapshots</h3>
+      <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <IconCamera size={20} /> Analysis Snapshots
+      </h3>
 
       <div className="snapshot-stream-list">
         {snapshots.map((snapshot, idx) => (
@@ -59,7 +73,8 @@ function SnapshotComparison({ repoId }) {
                 <span className="snapshot-tag-index">#{snapshots.length - idx}</span>
                 {snapshot.commit_hash ? (
                   <span className="snapshot-tag-commit" title={snapshot.commit_hash}>
-                    <span style={{ opacity: 0.7 }}>⎇</span> {snapshot.commit_hash.slice(0, 7)}
+                    <IconGitBranch size={13} style={{ opacity: 0.7, marginRight: '4px' }} />
+                    {snapshot.commit_hash.slice(0, 7)}
                   </span>
                 ) : (
                   <span className="snapshot-tag-uncommitted">Working Tree</span>
@@ -113,13 +128,21 @@ function SnapshotComparison({ repoId }) {
                   onClick={() => setSelectedSnapshot1(snapshot.snapshot_id)}
                   className={`snapshot-action-btn ${selectedSnapshot1 === snapshot.snapshot_id ? 'active-s1' : ''}`}
                 >
-                  {selectedSnapshot1 === snapshot.snapshot_id ? '✓ Base (Snap 1)' : 'Set as Base'}
+                  {selectedSnapshot1 === snapshot.snapshot_id ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <IconCheck size={13} /> Base (Snap 1)
+                    </span>
+                  ) : 'Set as Base'}
                 </button>
                 <button
                   onClick={() => setSelectedSnapshot2(snapshot.snapshot_id)}
                   className={`snapshot-action-btn ${selectedSnapshot2 === snapshot.snapshot_id ? 'active-s2' : ''}`}
                 >
-                  {selectedSnapshot2 === snapshot.snapshot_id ? '✓ Target (Snap 2)' : 'Set as Target'}
+                  {selectedSnapshot2 === snapshot.snapshot_id ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <IconCheck size={13} /> Target (Snap 2)
+                    </span>
+                  ) : 'Set as Target'}
                 </button>
               </div>
             </div>
@@ -133,9 +156,10 @@ function SnapshotComparison({ repoId }) {
             <div style={styles.compareCommitRow}>
               <span style={{ color: 'var(--text-muted)' }}>Snapshot 1:</span>
               {snapshots.find(s => s.snapshot_id === selectedSnapshot1)?.commit_hash ? (
-                <span>
-                  <strong style={{ color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
-                    ⎇ {snapshots.find(s => s.snapshot_id === selectedSnapshot1).commit_hash.slice(0, 7)}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <strong style={{ color: '#38bdf8', fontFamily: 'var(--font-mono)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <IconGitBranch size={13} />
+                    {snapshots.find(s => s.snapshot_id === selectedSnapshot1).commit_hash.slice(0, 7)}
                   </strong>
                   {snapshots.find(s => s.snapshot_id === selectedSnapshot1)?.commit_message && (
                     <span style={{ color: 'var(--text-secondary)', marginLeft: '6px' }}>
@@ -145,13 +169,16 @@ function SnapshotComparison({ repoId }) {
                 </span>
               ) : <em>Working Tree</em>}
             </div>
-            <div style={{ margin: '4px 0', color: 'var(--text-muted)' }}>➔</div>
+            <div style={{ margin: '4px 0', color: 'var(--text-muted)', display: 'flex', justifyContent: 'center' }}>
+              <IconArrowRight size={14} />
+            </div>
             <div style={styles.compareCommitRow}>
               <span style={{ color: 'var(--text-muted)' }}>Snapshot 2:</span>
               {snapshots.find(s => s.snapshot_id === selectedSnapshot2)?.commit_hash ? (
-                <span>
-                  <strong style={{ color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
-                    ⎇ {snapshots.find(s => s.snapshot_id === selectedSnapshot2).commit_hash.slice(0, 7)}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <strong style={{ color: '#38bdf8', fontFamily: 'var(--font-mono)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <IconGitBranch size={13} />
+                    {snapshots.find(s => s.snapshot_id === selectedSnapshot2).commit_hash.slice(0, 7)}
                   </strong>
                   {snapshots.find(s => s.snapshot_id === selectedSnapshot2)?.commit_message && (
                     <span style={{ color: 'var(--text-secondary)', marginLeft: '6px' }}>
@@ -194,7 +221,10 @@ function SnapshotComparison({ repoId }) {
           {/* Summary */}
           {comparison.summary && (
             <div style={styles.summaryBox}>
-              <strong>📝 Summary:</strong> {comparison.summary}
+              <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginRight: '6px' }}>
+                <IconFileText size={14} /> Summary:
+              </strong>
+              {comparison.summary}
             </div>
           )}
 
@@ -202,10 +232,13 @@ function SnapshotComparison({ repoId }) {
           <div style={styles.comparisonGrid}>
             <div style={styles.comparisonCard}>
               <div style={styles.cardHeaderFlex}>
-                <h5 style={{ margin: 0 }}>📸 Snapshot 1</h5>
+                <h5 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <IconCamera size={14} /> Snapshot 1
+                </h5>
                 {comparison.snapshot1.commit_hash ? (
                   <span style={styles.commitBadge} title={comparison.snapshot1.commit_hash}>
-                    <span style={{ opacity: 0.6 }}>⎇</span> {comparison.snapshot1.commit_hash.slice(0, 7)}
+                    <IconGitBranch size={12} style={{ opacity: 0.7, marginRight: '4px' }} />
+                    {comparison.snapshot1.commit_hash.slice(0, 7)}
                   </span>
                 ) : (
                   <span style={styles.uncommittedBadge}>Working Tree</span>
@@ -213,7 +246,9 @@ function SnapshotComparison({ repoId }) {
               </div>
               {comparison.snapshot1.commit_message && (
                 <div style={styles.comparisonCommitMsgBox}>
-                  <span style={styles.commitMessageIcon}>💬</span>
+                  <span style={styles.commitMessageIcon}>
+                    <IconMessage size={13} />
+                  </span>
                   <span style={styles.commitMessageText}>{comparison.snapshot1.commit_message}</span>
                 </div>
               )}
@@ -231,7 +266,7 @@ function SnapshotComparison({ repoId }) {
               {comparison.snapshot1.commit_hash && comparison.snapshot2.commit_hash && (
                 <div style={styles.deltaCommitFlow}>
                   <span>{comparison.snapshot1.commit_hash.slice(0, 7)}</span>
-                  <span>➔</span>
+                  <span><IconArrowRight size={13} /></span>
                   <span>{comparison.snapshot2.commit_hash.slice(0, 7)}</span>
                 </div>
               )}
@@ -253,10 +288,13 @@ function SnapshotComparison({ repoId }) {
 
             <div style={styles.comparisonCard}>
               <div style={styles.cardHeaderFlex}>
-                <h5 style={{ margin: 0 }}>📸 Snapshot 2</h5>
+                <h5 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <IconCamera size={14} /> Snapshot 2
+                </h5>
                 {comparison.snapshot2.commit_hash ? (
                   <span style={styles.commitBadge} title={comparison.snapshot2.commit_hash}>
-                    <span style={{ opacity: 0.6 }}>⎇</span> {comparison.snapshot2.commit_hash.slice(0, 7)}
+                    <IconGitBranch size={12} style={{ opacity: 0.7, marginRight: '4px' }} />
+                    {comparison.snapshot2.commit_hash.slice(0, 7)}
                   </span>
                 ) : (
                   <span style={styles.uncommittedBadge}>Working Tree</span>
@@ -264,7 +302,9 @@ function SnapshotComparison({ repoId }) {
               </div>
               {comparison.snapshot2.commit_message && (
                 <div style={styles.comparisonCommitMsgBox}>
-                  <span style={styles.commitMessageIcon}>💬</span>
+                  <span style={styles.commitMessageIcon}>
+                    <IconMessage size={13} />
+                  </span>
                   <span style={styles.commitMessageText}>{comparison.snapshot2.commit_message}</span>
                 </div>
               )}
@@ -296,7 +336,9 @@ function SnapshotComparison({ repoId }) {
           {/* File Changes */}
           <div style={styles.fileChangesSection}>
             <div style={styles.fileChangeColumn}>
-              <h5>➕ Files Added ({comparison.changes.files_added?.length || 0})</h5>
+              <h5 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconPlus size={14} style={{ color: '#22c55e' }} /> Files Added ({comparison.changes.files_added?.length || 0})
+              </h5>
               <div style={styles.fileList}>
                 {comparison.changes.files_added?.slice(0, 10).map((file, idx) => (
                   <div key={idx} style={styles.fileItem}>{file ? file.split(/[\\/]/).pop() : 'N/A'}</div>
@@ -307,7 +349,9 @@ function SnapshotComparison({ repoId }) {
               </div>
             </div>
             <div style={styles.fileChangeColumn}>
-              <h5>📝 Files Modified ({comparison.changes.files_modified?.length || 0})</h5>
+              <h5 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconFileText size={14} style={{ color: '#38bdf8' }} /> Files Modified ({comparison.changes.files_modified?.length || 0})
+              </h5>
               <div style={styles.fileList}>
                 {comparison.changes.files_modified?.slice(0, 10).map((file, idx) => (
                   <div key={idx} style={styles.fileItem}>{file ? file.split(/[\\/]/).pop() : 'N/A'}</div>
@@ -318,7 +362,9 @@ function SnapshotComparison({ repoId }) {
               </div>
             </div>
             <div style={styles.fileChangeColumn}>
-              <h5>➖ Files Removed ({comparison.changes.files_removed?.length || 0})</h5>
+              <h5 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconMinus size={14} style={{ color: '#f43f5e' }} /> Files Removed ({comparison.changes.files_removed?.length || 0})
+              </h5>
               <div style={styles.fileList}>
                 {comparison.changes.files_removed?.slice(0, 10).map((file, idx) => (
                   <div key={idx} style={styles.fileItem}>{file ? file.split(/[\\/]/).pop() : 'N/A'}</div>
@@ -357,7 +403,9 @@ function SnapshotComparison({ repoId }) {
           {/* Structural Risk — Changed Files */}
           {comparison.structural_risks && comparison.structural_risks.length > 0 && (
             <div style={styles.riskSection}>
-              <h5>🎯 Structural Risk — Changed Files</h5>
+              <h5 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconTarget size={15} style={{ color: '#eab308' }} /> Structural Risk — Changed Files
+              </h5>
               <div style={styles.riskDescription}>
                 Files changed in this comparison ranked by structural risk (fan-in, fan-out, circular dependencies)
               </div>
@@ -412,9 +460,9 @@ const getRiskColor = (level) => {
 };
 
 const getRiskIcon = (level) => {
-  if (level === 'high') return '🔴';
-  if (level === 'medium') return '🟡';
-  return '🟢';
+  if (level === 'high') return <IconDot size={12} color="#f43f5e" style={{ marginRight: '6px', verticalAlign: '-1px' }} />;
+  if (level === 'medium') return <IconDot size={12} color="#eab308" style={{ marginRight: '6px', verticalAlign: '-1px' }} />;
+  return <IconDot size={12} color="#22c55e" style={{ marginRight: '6px', verticalAlign: '-1px' }} />;
 };
 
 const getPatternChangeStyle = (change) => {

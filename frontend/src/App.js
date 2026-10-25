@@ -14,6 +14,21 @@ import CodeHealth from './components/CodeHealth';
 import WorkflowExplorer from './components/WorkflowExplorer';
 import ChatAssistant from './components/ChatAssistant';
 import HRPortal from './components/HRPortal';
+import {
+  IconUser,
+  IconSun,
+  IconMoon,
+  IconTarget,
+  IconArrowsHorizontal,
+  IconCompass,
+  IconHexagon,
+  IconZap,
+  IconDiamond,
+  IconLink,
+  IconAlertTriangle,
+  IconDatabase,
+  IconCamera
+} from './components/Icons';
 import { api } from './services/api';
 
 const repositoryLabel = (result, source) => {
@@ -151,18 +166,18 @@ function App() {
   }, []);
 
   const tabs = [
-    { id: 'analyze', label: 'Analyze', icon: '◈' },
-    { id: 'workflows', label: 'Workflows', icon: '⇄' },
-    { id: 'architecture', label: 'Architecture', icon: '△' },
-    { id: 'graph', label: 'File Graph', icon: '⬢' },
-    { id: 'blast-radius', label: 'Blast Radius', icon: '◎' },
-    { id: 'patterns', label: 'Patterns', icon: '◬' },
-    { id: 'coupling', label: 'Coupling', icon: '⬡' },
-    { id: 'functions', label: 'Functions', icon: 'ƒ' },
-    { id: 'health', label: 'Unused', icon: '○' },
-    { id: 'function-graph', label: 'Fn Graph', icon: '⬣' },
-    { id: 'repositories', label: 'Repos', icon: '▦' },
-    { id: 'snapshots', label: 'Snapshots', icon: '❐' }
+    { id: 'analyze', label: 'Analyze', icon: <IconTarget size={13} /> },
+    { id: 'workflows', label: 'Workflows', icon: <IconArrowsHorizontal size={13} /> },
+    { id: 'architecture', label: 'Architecture', icon: <IconCompass size={13} /> },
+    { id: 'graph', label: 'File Graph', icon: <IconHexagon size={13} /> },
+    { id: 'blast-radius', label: 'Blast Radius', icon: <IconZap size={13} /> },
+    { id: 'patterns', label: 'Patterns', icon: <IconDiamond size={13} /> },
+    { id: 'coupling', label: 'Coupling', icon: <IconLink size={13} /> },
+    { id: 'functions', label: 'Functions', icon: <span style={{ fontFamily: 'var(--font-mono)' }}>ƒ</span> },
+    { id: 'health', label: 'Unused', icon: <IconAlertTriangle size={13} /> },
+    { id: 'function-graph', label: 'Fn Graph', icon: <IconHexagon size={13} /> },
+    { id: 'repositories', label: 'Repos', icon: <IconDatabase size={13} /> },
+    { id: 'snapshots', label: 'Snapshots', icon: <IconCamera size={13} /> }
   ];
 
   return (
@@ -193,7 +208,9 @@ function App() {
               onClick={toggleHRPortal}
               title={activeTab === 'hr' ? "Exit HR Activity Portal" : "Open HR & Engineering Activity Portal"}
             >
-              <span className="header-meta-icon" style={{ color: 'var(--text-muted)' }}>👤</span>
+              <span className="header-meta-icon" style={{ color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center' }}>
+                <IconUser size={14} />
+              </span>
               <span className="header-meta-label">HR Activity</span>
               {hrUnreadPRs > 0 && (
                 <span className="header-hr-badge">
@@ -212,8 +229,8 @@ function App() {
               title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               aria-label="Toggle light or dark mode"
             >
-              <span className="header-meta-icon" style={{ fontSize: '13px', lineHeight: 1 }}>
-                {theme === 'dark' ? '☀️' : '🌙'}
+              <span className="header-meta-icon" style={{ fontSize: '13px', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}>
+                {theme === 'dark' ? <IconSun size={14} /> : <IconMoon size={14} />}
               </span>
               <span className="header-meta-label">
                 {theme === 'dark' ? 'Light' : 'Dark'}
@@ -301,7 +318,9 @@ function App() {
           {activeTab === 'snapshots' && currentRepoId && <SnapshotComparison key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'snapshots' && !currentRepoId && (
             <div style={styles.emptyState}>
-              <span style={{ fontSize: '32px', marginBottom: '12px', display: 'block' }}>▦</span>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center', opacity: 0.7 }}>
+                <IconCamera size={42} />
+              </div>
               Select a repository first from the Repos tab
             </div>
           )}
@@ -417,6 +436,9 @@ const styles = {
   tabIcon: {
     fontSize: '11px',
     opacity: 0.7,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   main: {
     maxWidth: '1400px',

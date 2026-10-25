@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { formatFilePath } from '../utils/formatters';
+import { IconLink, IconChevronUp, IconChevronDown, IconPackage, IconArrowRight, IconRefresh, IconInfo } from './Icons';
 
 export default function CouplingAnalysis({ repoId }) {
   const [coupling, setCoupling] = useState(null);
@@ -88,7 +89,9 @@ export default function CouplingAnalysis({ repoId }) {
     return (
       <div style={s.container}>
         <div style={s.emptyWrap}>
-          <span style={{ fontSize: '36px', display: 'block', marginBottom: '12px' }}>🔗</span>
+          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center', opacity: 0.8 }}>
+            <IconLink size={42} />
+          </div>
           <p style={s.emptyTitle}>No Coupling Data Available</p>
           <p style={s.emptyHint}>Analyze a repository first to view coupling metrics</p>
         </div>
@@ -307,9 +310,16 @@ export default function CouplingAnalysis({ repoId }) {
                         </div>
                         <span style={{
                           ...s.clickToInspect,
-                          color: isExpanded ? '#38bdf8' : (isHovered ? '#94a3b8' : '#475569')
+                          color: isExpanded ? '#38bdf8' : (isHovered ? '#94a3b8' : '#475569'),
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
                         }}>
-                          {isExpanded ? 'Hide coupled files ▲' : 'Click to see coupled files ▼'}
+                          {isExpanded ? (
+                            <>Hide coupled files <IconChevronUp size={12} /></>
+                          ) : (
+                            <>Click to see coupled files <IconChevronDown size={12} /></>
+                          )}
                         </span>
                       </div>
                       <div style={s.barTrack}>
@@ -428,7 +438,7 @@ export default function CouplingAnalysis({ repoId }) {
                                   return (
                                     <div key={i} style={s.connectedFileItem} title={f}>
                                       <span style={isExternal ? s.itemIconExt : s.itemArrowOut}>
-                                        {isExternal ? '📦' : '↑'}
+                                        {isExternal ? <IconPackage size={14} /> : '↑'}
                                       </span>
                                       <div style={s.itemPathGroup}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -444,7 +454,8 @@ export default function CouplingAnalysis({ repoId }) {
                                 })
                               ) : (
                                 <div style={s.emptyConnectionMsg}>
-                                  <span>ℹ️</span> No outgoing dependencies (Leaf utility/service)
+                                  <IconInfo size={14} style={{ marginRight: '6px', verticalAlign: '-2px' }} />
+                                  No outgoing dependencies (Leaf utility/service)
                                 </div>
                               )}
                             </div>
@@ -475,10 +486,10 @@ export default function CouplingAnalysis({ repoId }) {
                   {cycle.map((f, i) => (
                     <React.Fragment key={i}>
                       <span style={s.cycleFile}>{formatFilePath(f, 1)}</span>
-                      {i < cycle.length - 1 && <span style={s.cycleArrow}>→</span>}
+                      {i < cycle.length - 1 && <span style={s.cycleArrow}><IconArrowRight size={12} /></span>}
                     </React.Fragment>
                   ))}
-                  <span style={s.cycleArrow}>↩</span>
+                  <span style={s.cycleArrow}><IconRefresh size={12} /></span>
                 </div>
               </div>
             ))}

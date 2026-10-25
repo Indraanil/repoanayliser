@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { api } from '../services/api';
 import SearchableTreeSelect from './SearchableTreeSelect';
+import { IconHexagon } from './Icons';
 
 const functionValue = (fn) => `${fn.file || ''}::${fn.name}::${fn.line || 0}`;
 
@@ -333,7 +334,9 @@ export default function FunctionGraph({ repoId, theme }) {
       </div>
       {graphData.nodes.length === 0 ? (
         <div style={styles.emptyState}>
-          <span style={{ fontSize: '32px', display: 'block', marginBottom: '12px' }}>⬣</span>
+          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center', opacity: 0.8 }}>
+            <IconHexagon size={38} />
+          </div>
           <p style={styles.emptyText}>No function call data available</p>
           <p style={styles.emptyHint}>Analyze a repository first to see function relationships</p>
         </div>
