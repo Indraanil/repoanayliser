@@ -5,7 +5,7 @@ import SearchableTreeSelect from './SearchableTreeSelect';
 
 const functionValue = (fn) => `${fn.file || ''}::${fn.name}::${fn.line || 0}`;
 
-export default function FunctionGraph({ repoId }) {
+export default function FunctionGraph({ repoId, theme }) {
   const svgRef = useRef();
   const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export default function FunctionGraph({ repoId }) {
   useEffect(() => {
     if (!loading && svgRef.current) return renderGraph(graphData);
     return undefined;
-  }, [graphData, loading]);
+  }, [graphData, loading, theme]);
 
   const loadFunctions = async () => {
     try {
@@ -68,6 +68,14 @@ export default function FunctionGraph({ repoId }) {
     svg.selectAll('*').remove();
     if (!data.nodes || data.nodes.length === 0) return undefined;
 
+    const isLight = (theme === 'light') || document.documentElement.getAttribute('data-theme') === 'light';
+    const linkColor = isLight ? '#cbd5e1' : '#3f3f46';
+    const nodeFileColor = isLight ? '#64748b' : '#a1a1aa';
+    const nodeFileStroke = isLight ? '#475569' : '#52525b';
+    const labelFnColor = isLight ? '#0f172a' : '#e4e4e7';
+    const labelFileColor = isLight ? '#475569' : '#71717a';
+    const arrowFill = isLight ? '#94a3b8' : '#52525b';
+
     const width = 900;
     const height = 600;
 
@@ -109,16 +117,16 @@ export default function FunctionGraph({ repoId }) {
       .attr('markerHeight', 8)
       .append('svg:path')
       .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-      .attr('fill', '#52525b');
+      .attr('fill', arrowFill);
 
     const link = g.append('g')
       .selectAll('line')
       .data(graphEdges)
       .enter()
       .append('line')
-      .attr('stroke', '#3f3f46')
+      .attr('stroke', linkColor)
       .attr('stroke-width', 1.5)
-      .attr('stroke-opacity', 0.5)
+      .attr('stroke-opacity', isLight ? 0.7 : 0.5)
       .attr('marker-end', 'url(#arrowhead)');
 
     const node = g.append('g')
@@ -127,8 +135,8 @@ export default function FunctionGraph({ repoId }) {
       .enter()
       .append('circle')
       .attr('r', d => d.focus ? 13 : d.type === 'function' ? 9 : 7)
-      .attr('fill', d => d.focus ? '#60a5fa' : d.type === 'function' ? '#fbbf24' : '#a1a1aa')
-      .attr('stroke', d => d.type === 'function' ? '#92400e' : '#52525b')
+      .attr('fill', d => d.focus ? '#3b82f6' : d.type === 'function' ? '#fbbf24' : nodeFileColor)
+      .attr('stroke', d => d.type === 'function' ? '#92400e' : nodeFileStroke)
       .attr('stroke-width', 1.5)
       .call(d3.drag()
         .on('start', dragStarted)
@@ -147,7 +155,11 @@ export default function FunctionGraph({ repoId }) {
       .attr('font-size', 10)
       .attr('font-family', 'Inter, sans-serif')
       .attr('font-weight', d => d.type === 'function' ? '600' : '400')
-      .attr('fill', d => d.type === 'function' ? '#e4e4e7' : '#71717a')
+      .attr('fill', d => d.type === 'function' ? labelFnColor : labelFileColor)
+      .attr('stroke', isLight ? '#ffffff' : '#09090b')
+      .attr('stroke-width', 2.5)
+      .attr('stroke-linejoin', 'round')
+      .attr('paint-order', 'stroke fill')
       .attr('dx', 12)
       .attr('dy', 4);
 
@@ -167,18 +179,19 @@ export default function FunctionGraph({ repoId }) {
     const resetHighlight = () => {
       selectedNode = null;
       node.transition().duration(300)
-        .attr('fill', d => d.type === 'function' ? '#fbbf24' : '#a1a1aa')
-        .attr('stroke', d => d.type === 'function' ? '#92400e' : '#52525b')
+        .attr('fill', d => d.type === 'function' ? '#fbbf24' : nodeFileColor)
+        .attr('stroke', d => d.type === 'function' ? '#92400e' : nodeFileStroke)
         .attr('stroke-width', 1.5)
         .attr('r', d => d.type === 'function' ? 9 : 7)
         .attr('opacity', 1);
       link.transition().duration(300)
-        .attr('stroke', '#3f3f46')
+        .attr('stroke', linkColor)
         .attr('stroke-width', 1.5)
-        .attr('stroke-opacity', 0.5);
+        .attr('stroke-opacity', isLight ? 0.7 : 0.5);
       labels.transition().duration(300)
-        .attr('fill', d => d.type === 'function' ? '#e4e4e7' : '#71717a')
+        .attr('fill', d => d.type === 'function' ? labelFnColor : labelFileColor)
         .attr('opacity', 1)
+        .attr('stroke', isLight ? '#ffffff' : '#09090b')
         .attr('font-weight', d => d.type === 'function' ? '600' : '400');
     };
 
@@ -192,9 +205,9 @@ export default function FunctionGraph({ repoId }) {
         .attr('opacity', n => n.id === d.id || connectedIds.has(n.id) ? 1 : 0.08)
         .attr('fill', n => {
           if (n.id === d.id) return '#60a5fa';
-          return n.type === 'function' ? '#fbbf24' : '#a1a1aa';
+          return n.type === 'function' ? '#fbbf24' : nodeFileColor;
         })
-        .attr('stroke', n => n.id === d.id ? '#3b82f6' : n.type === 'function' ? '#92400e' : '#52525b')
+        .attr('stroke', n => n.id === d.id ? '#2563eb' : n.type === 'function' ? '#92400e' : nodeFileStroke)
         .attr('stroke-width', n => n.id === d.id ? 3 : 1.5)
         .attr('r', n => n.id === d.id ? 12 : n.type === 'function' ? 9 : 7);
 
@@ -202,7 +215,7 @@ export default function FunctionGraph({ repoId }) {
         .attr('stroke', l => {
           const sId = typeof l.source === 'object' ? l.source.id : l.source;
           const tId = typeof l.target === 'object' ? l.target.id : l.target;
-          return (sId === d.id || tId === d.id) ? '#60a5fa' : '#3f3f46';
+          return (sId === d.id || tId === d.id) ? '#3b82f6' : (isLight ? '#e2e8f0' : '#27272a');
         })
         .attr('stroke-width', l => {
           const sId = typeof l.source === 'object' ? l.source.id : l.source;
@@ -216,8 +229,18 @@ export default function FunctionGraph({ repoId }) {
         });
 
       labels.transition().duration(300)
-        .attr('opacity', n => n.id === d.id || connectedIds.has(n.id) ? 1 : 0.08)
-        .attr('fill', n => n.id === d.id ? '#fafafa' : connectedIds.has(n.id) ? (n.type === 'function' ? '#e4e4e7' : '#a1a1aa') : '#71717a')
+        .attr('opacity', n => n.id === d.id || connectedIds.has(n.id) ? 1 : (isLight ? 0.12 : 0.08))
+        .attr('fill', n => {
+          if (n.id === d.id) return isLight ? '#0f172a' : '#fafafa';
+          if (connectedIds.has(n.id)) {
+            return n.type === 'function' ? (isLight ? '#0f172a' : '#fafafa') : (isLight ? '#334155' : '#e4e4e7');
+          }
+          return isLight ? '#94a3b8' : '#71717a';
+        })
+        .attr('stroke', isLight ? '#ffffff' : '#09090b')
+        .attr('stroke-width', 2.5)
+        .attr('stroke-linejoin', 'round')
+        .attr('paint-order', 'stroke fill')
         .attr('font-weight', n => n.id === d.id ? '700' : n.type === 'function' ? '600' : '400');
     };
 

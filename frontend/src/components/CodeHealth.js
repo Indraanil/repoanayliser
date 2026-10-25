@@ -13,7 +13,7 @@ function CandidateRow({ title, path, line, reason, confidence }) {
     <div style={styles.row}>
       <div style={styles.rowMain}>
         <strong style={styles.rowTitle}>{title}</strong>
-        <code title={path} style={styles.path}>{compactPath(path)}{line ? `:${line}` : ''}</code>
+        <code title={path} className="codehealth-path">{compactPath(path)}{line ? `:${line}` : ''}</code>
         <span style={styles.reason}>{reason}</span>
       </div>
       <span style={styles.confidence}>{Math.round((confidence || 0) * 100)}% signal</span>
@@ -85,23 +85,65 @@ export default function CodeHealth({ repoId }) {
           <h2 style={styles.title}>Unused & Redundant Candidates</h2>
           <p style={styles.subtitle}>A list-based companion to the graphs, based on missing inbound references and repeated function names.</p>
         </div>
-        <input
-          value={query}
-          onChange={event => setQuery(event.target.value)}
-          placeholder="Search function or file…"
-          style={styles.search}
-        />
+        <div className="codehealth-search-wrap">
+          <svg className="codehealth-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            value={query}
+            onChange={event => setQuery(event.target.value)}
+            placeholder="Search function or file…"
+            className="codehealth-search-input"
+          />
+        </div>
       </div>
 
-      <div style={styles.notice}>
-        <strong>Review before deleting.</strong> {report.caveat}
+      <div className="codehealth-warning-banner">
+        <div className="codehealth-warning-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div className="codehealth-warning-text">
+          <strong>Review before deleting.</strong> {report.caveat}
+        </div>
       </div>
 
-      <div style={styles.summaryGrid}>
-        <div style={styles.summaryCard}><strong>{report.summary?.files || 0}</strong><span>file candidates</span></div>
-        <div style={styles.summaryCard}><strong>{report.summary?.functions || 0}</strong><span>function candidates</span></div>
-        <div style={styles.summaryCard}><strong>{report.summary?.duplicate_files || 0}</strong><span>exact duplicate groups</span></div>
-        <div style={styles.summaryCard}><strong>{report.summary?.duplicate_groups || 0}</strong><span>duplicate-name groups</span></div>
+      <div className="codehealth-metrics-grid">
+        <div className="codehealth-metric-card blue">
+          <div className="codehealth-metric-header">
+            <span className="codehealth-metric-badge">Files</span>
+          </div>
+          <div className="codehealth-metric-val">{report.summary?.files || 0}</div>
+          <div className="codehealth-metric-label">Unreferenced File Candidates</div>
+        </div>
+
+        <div className="codehealth-metric-card purple">
+          <div className="codehealth-metric-header">
+            <span className="codehealth-metric-badge">Functions</span>
+          </div>
+          <div className="codehealth-metric-val">{report.summary?.functions || 0}</div>
+          <div className="codehealth-metric-label">Functions with No Inbound Calls</div>
+        </div>
+
+        <div className="codehealth-metric-card rose">
+          <div className="codehealth-metric-header">
+            <span className="codehealth-metric-badge">Duplicates</span>
+          </div>
+          <div className="codehealth-metric-val">{report.summary?.duplicate_files || 0}</div>
+          <div className="codehealth-metric-label">Exact Content Hash Matches</div>
+        </div>
+
+        <div className="codehealth-metric-card amber">
+          <div className="codehealth-metric-header">
+            <span className="codehealth-metric-badge">Namesakes</span>
+          </div>
+          <div className="codehealth-metric-val">{report.summary?.duplicate_groups || 0}</div>
+          <div className="codehealth-metric-label">Repeated Function Names</div>
+        </div>
       </div>
 
       <Section
@@ -135,7 +177,7 @@ export default function CodeHealth({ repoId }) {
             </summary>
             <div style={styles.occurrences}>
               {(group.files || []).map(file => (
-                <code key={file} title={file} style={styles.path}>{compactPath(file)}</code>
+                <code key={file} title={file} className="codehealth-path">{compactPath(file)}</code>
               ))}
             </div>
           </details>
@@ -174,7 +216,7 @@ export default function CodeHealth({ repoId }) {
             </summary>
             <div style={styles.occurrences}>
               {(group.occurrences || []).map((item, index) => (
-                <code key={`${item.file}:${item.line}:${index}`} title={item.file} style={styles.path}>
+                <code key={`${item.file}:${item.line}:${index}`} title={item.file} className="codehealth-path">
                   {compactPath(item.file)}{item.line ? `:${item.line}` : ''}
                 </code>
               ))}

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { api } from '../services/api';
 
-export default function DependencyGraph({ repoId }) {
+export default function DependencyGraph({ repoId, theme }) {
   const svgRef = useRef();
   const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
   const [loading, setLoading] = useState(false);
@@ -28,12 +28,18 @@ export default function DependencyGraph({ repoId }) {
       return renderGraph(graphData);
     }
     return undefined;
-  }, [graphData, loading]);
+  }, [graphData, loading, theme]);
 
   const renderGraph = (data) => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
+
+    const isLight = (theme === 'light') || document.documentElement.getAttribute('data-theme') === 'light';
+    const linkColor = isLight ? '#cbd5e1' : '#3f3f46';
+    const nodeColor = isLight ? '#64748b' : '#a1a1aa';
+    const nodeStrokeColor = isLight ? '#475569' : '#52525b';
+    const labelColor = isLight ? '#334155' : '#71717a';
 
     const width = 900;
     const height = 600;
@@ -66,9 +72,9 @@ export default function DependencyGraph({ repoId }) {
       .data(edges)
       .enter()
       .append('line')
-      .attr('stroke', '#3f3f46')
+      .attr('stroke', linkColor)
       .attr('stroke-width', 1.5)
-      .attr('stroke-opacity', 0.5);
+      .attr('stroke-opacity', isLight ? 0.7 : 0.5);
 
     const node = g.append('g')
       .selectAll('circle')
@@ -76,8 +82,8 @@ export default function DependencyGraph({ repoId }) {
       .enter()
       .append('circle')
       .attr('r', 7)
-      .attr('fill', '#a1a1aa')
-      .attr('stroke', '#52525b')
+      .attr('fill', nodeColor)
+      .attr('stroke', nodeStrokeColor)
       .attr('stroke-width', 1)
       .call(d3.drag()
         .on('start', dragStarted)
@@ -92,7 +98,11 @@ export default function DependencyGraph({ repoId }) {
       .text(d => d.label)
       .attr('font-size', 10)
       .attr('font-family', 'Inter, sans-serif')
-      .attr('fill', '#71717a')
+      .attr('fill', labelColor)
+      .attr('stroke', isLight ? '#ffffff' : '#09090b')
+      .attr('stroke-width', 2.5)
+      .attr('stroke-linejoin', 'round')
+      .attr('paint-order', 'stroke fill')
       .attr('dx', 12)
       .attr('dy', 4);
 
@@ -112,18 +122,19 @@ export default function DependencyGraph({ repoId }) {
     const resetHighlight = () => {
       selectedNode = null;
       node.transition().duration(300)
-        .attr('fill', '#a1a1aa')
-        .attr('stroke', '#52525b')
+        .attr('fill', nodeColor)
+        .attr('stroke', nodeStrokeColor)
         .attr('stroke-width', 1)
         .attr('r', 7)
         .attr('opacity', 1);
       link.transition().duration(300)
-        .attr('stroke', '#3f3f46')
+        .attr('stroke', linkColor)
         .attr('stroke-width', 1.5)
-        .attr('stroke-opacity', 0.5);
+        .attr('stroke-opacity', isLight ? 0.7 : 0.5);
       labels.transition().duration(300)
-        .attr('fill', '#71717a')
+        .attr('fill', labelColor)
         .attr('opacity', 1)
+        .attr('stroke', isLight ? '#ffffff' : '#09090b')
         .attr('font-weight', '400');
     };
 
@@ -135,8 +146,8 @@ export default function DependencyGraph({ repoId }) {
 
       node.transition().duration(300)
         .attr('opacity', n => n.id === d.id || connectedIds.has(n.id) ? 1 : 0.08)
-        .attr('fill', n => n.id === d.id ? '#60a5fa' : connectedIds.has(n.id) ? '#a1a1aa' : '#a1a1aa')
-        .attr('stroke', n => n.id === d.id ? '#3b82f6' : '#52525b')
+        .attr('fill', n => n.id === d.id ? '#3b82f6' : nodeColor)
+        .attr('stroke', n => n.id === d.id ? '#2563eb' : nodeStrokeColor)
         .attr('stroke-width', n => n.id === d.id ? 2.5 : 1)
         .attr('r', n => n.id === d.id ? 10 : 7);
 
@@ -144,7 +155,7 @@ export default function DependencyGraph({ repoId }) {
         .attr('stroke', l => {
           const sId = typeof l.source === 'object' ? l.source.id : l.source;
           const tId = typeof l.target === 'object' ? l.target.id : l.target;
-          return (sId === d.id || tId === d.id) ? '#60a5fa' : '#3f3f46';
+          return (sId === d.id || tId === d.id) ? '#3b82f6' : (isLight ? '#e2e8f0' : '#27272a');
         })
         .attr('stroke-width', l => {
           const sId = typeof l.source === 'object' ? l.source.id : l.source;
@@ -158,8 +169,16 @@ export default function DependencyGraph({ repoId }) {
         });
 
       labels.transition().duration(300)
-        .attr('opacity', n => n.id === d.id || connectedIds.has(n.id) ? 1 : 0.08)
-        .attr('fill', n => n.id === d.id ? '#fafafa' : connectedIds.has(n.id) ? '#a1a1aa' : '#71717a')
+        .attr('opacity', n => n.id === d.id || connectedIds.has(n.id) ? 1 : (isLight ? 0.12 : 0.08))
+        .attr('fill', n => {
+          if (n.id === d.id) return isLight ? '#0f172a' : '#fafafa';
+          if (connectedIds.has(n.id)) return isLight ? '#0f172a' : '#e4e4e7';
+          return isLight ? '#94a3b8' : '#71717a';
+        })
+        .attr('stroke', isLight ? '#ffffff' : '#09090b')
+        .attr('stroke-width', 2.5)
+        .attr('stroke-linejoin', 'round')
+        .attr('paint-order', 'stroke fill')
         .attr('font-weight', n => n.id === d.id ? '700' : '400');
     };
 

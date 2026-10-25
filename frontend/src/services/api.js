@@ -12,6 +12,9 @@ export const api = {
   analyzeLocal: (localPath) =>
     axios.post(`${API_BASE}/analyze/local`, { local_path: localPath }),
 
+  analyzeCommit: (repoId, commitHash, repoName = null) =>
+    axios.post(`${API_BASE}/analyze/commit`, { repo_id: repoId, commit_hash: commitHash, repo_name: repoName }),
+
   browseFolder: () =>
     axios.get(`${API_BASE}/browse-folder`),
 
@@ -121,7 +124,34 @@ export const api = {
         ...(filePath ? { file_path: filePath } : {}),
         depth
       }
-    })
+    }),
+
+  // HR Management APIs
+  hrLogin: (username, password) =>
+    axios.post(`${API_BASE}/hr/login`, { username, password }),
+
+  getHrContributors: () =>
+    axios.get(`${API_BASE}/hr/contributors`),
+
+  getHrDeveloperCommits: (developerId, repo = null) =>
+    axios.get(`${API_BASE}/hr/developer-commits`, {
+      params: {
+        developer_id: developerId,
+        ...(repo ? { repo } : {})
+      }
+    }),
+
+  getHrCommitAnalysis: (repoId, commitHash) =>
+    axios.get(`${API_BASE}/hr/commit-analysis/${encodeURIComponent(repoId)}/${encodeURIComponent(commitHash)}`),
+
+  getHrNotifications: () =>
+    axios.get(`${API_BASE}/hr/notifications`),
+
+  markHrNotificationRead: (notificationId) =>
+    axios.post(`${API_BASE}/hr/notifications/${notificationId}/read`),
+
+  createHrPRNotification: (prData) =>
+    axios.post(`${API_BASE}/hr/notifications/pr`, prData)
 };
 
 export const getConfidenceReport = async (repoId) => {

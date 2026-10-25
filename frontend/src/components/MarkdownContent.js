@@ -63,7 +63,15 @@ function MermaidDiagram({ definition }) {
     setError('');
 
     mermaidInstance
-      .then(mermaid => mermaid.render(id, definition))
+      .then(mermaid => {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: 'strict',
+          theme: isLight ? 'default' : 'dark'
+        });
+        return mermaid.render(id, definition);
+      })
       .then(({ svg }) => {
         if (isCurrent) setDiagram(svg);
       })
@@ -157,6 +165,6 @@ const styles = {
   blockquote: { margin: '12px 0', padding: '4px 14px', borderLeft: '3px solid var(--text-muted)', color: 'var(--text-muted)' },
   hr: { border: 0, borderTop: '1px solid var(--border)', margin: '18px 0' },
   pre: { margin: 0, padding: '14px', overflowX: 'auto', background: 'transparent', border: 0, borderRadius: 0, lineHeight: 1.65 },
-  code: { display: 'block', fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#d4d4d8', whiteSpace: 'pre' },
+  code: { display: 'block', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-primary)', whiteSpace: 'pre' },
   inlineCode: { padding: '2px 5px', background: 'var(--bg-elevated)', borderRadius: '4px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-primary)', wordBreak: 'break-word', overflowWrap: 'break-word' }
 };

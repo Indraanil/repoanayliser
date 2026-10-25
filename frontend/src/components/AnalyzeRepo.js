@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 
-export default function AnalyzeRepo({ onAnalysisComplete }) {
+export default function AnalyzeRepo({ onAnalysisComplete, pendingCommitAnalysis, onClearPendingCommit }) {
   const [mode, setMode] = useState('github'); // 'github' | 'local'
   const [repoUrl, setRepoUrl] = useState('');
   const [localPath, setLocalPath] = useState('');
@@ -9,6 +9,34 @@ export default function AnalyzeRepo({ onAnalysisComplete }) {
   const [browsing, setBrowsing] = useState(false);
   const [jobId, setJobId] = useState(null);
   const [status, setStatus] = useState('');
+
+  // Automatically start analysis when triggered with a specific commit from HR Activity
+  useEffect(() => {
+    if (pendingCommitAnalysis && pendingCommitAnalysis.commit_hash) {
+      startCommitAnalysis(pendingCommitAnalysis);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingCommitAnalysis]);
+
+  const startCommitAnalysis = async (commitData) => {
+    const commitHash = commitData.commit_hash;
+    const repoId = commitData.repo_id;
+    const repoName = commitData.repo_name || repoId;
+    const shortHash = commitHash.slice(0, 8);
+
+    setLoading(true);
+    setStatus(`Initiating analysis for ${repoName} @ ${shortHash}...`);
+
+    try {
+      const { data } = await api.analyzeCommit(repoId, commitHash, repoName);
+      setJobId(data.job_id);
+      setStatus(`Checking out commit ${shortHash} and storing snapshot in Neo4j...`);
+      pollStatus(data.job_id, true, repoName);
+    } catch (error) {
+      setStatus('Error starting commit analysis: ' + (error.response?.data?.detail || error.message));
+      setLoading(false);
+    }
+  };
 
   const handleBrowse = async () => {
     setBrowsing(true);
@@ -40,14 +68,14 @@ export default function AnalyzeRepo({ onAnalysisComplete }) {
       setStatus(isLocal
         ? 'Parsing files and building graph...'
         : 'Cloning repository and importing git history...');
-      pollStatus(data.job_id);
+      pollStatus(data.job_id, false, mode === 'local' ? localPath : repoUrl);
     } catch (error) {
       setStatus('Error: ' + error.message);
       setLoading(false);
     }
   };
 
-  const pollStatus = async (id) => {
+  const pollStatus = async (id, isCommit = false, customSource = null) => {
     const interval = setInterval(async () => {
       try {
         const { data } = await api.getStatus(id);
@@ -55,7 +83,8 @@ export default function AnalyzeRepo({ onAnalysisComplete }) {
         if (data.status === 'completed') {
           clearInterval(interval);
           setLoading(false);
-          onAnalysisComplete(data.result, mode === 'local' ? localPath : repoUrl);
+          const source = customSource || (mode === 'local' ? localPath : repoUrl);
+          onAnalysisComplete(data.result, source);
         } else if (data.status === 'failed') {
           clearInterval(interval);
           setLoading(false);
@@ -84,6 +113,44 @@ export default function AnalyzeRepo({ onAnalysisComplete }) {
           </p>
         </div>
       </div>
+
+      {/* Commit Snapshot Banner when triggered from HR commit analysis */}
+      {pendingCommitAnalysis && (
+        <div style={styles.commitBanner} id="commit-analysis-banner">
+          <div style={styles.commitBannerTop}>
+            <span style={styles.commitBadge}>
+              <span style={{ fontSize: '12px' }}>◈</span> ANALYZING COMMIT SNAPSHOT
+            </span>
+            <code style={styles.commitCode}>
+              {(pendingCommitAnalysis.commit_hash || '').slice(0, 8)}
+            </code>
+            <span style={styles.commitRepoTag}>
+              {pendingCommitAnalysis.repo_name || pendingCommitAnalysis.repo_id}
+            </span>
+            {!loading && onClearPendingCommit && (
+              <button
+                style={styles.cancelCommitBtn}
+                onClick={onClearPendingCommit}
+                title="Cancel commit analysis and return to standard analysis"
+              >
+                ✕ Cancel
+              </button>
+            )}
+          </div>
+          <div style={styles.commitMessage}>
+            {pendingCommitAnalysis.subject || pendingCommitAnalysis.full_message || 'Analyzing architecture and persisting commit snapshot'}
+          </div>
+          <div style={styles.commitMeta}>
+            <span>Author: <strong>{pendingCommitAnalysis.author || 'Unknown'}</strong></span>
+            {pendingCommitAnalysis.date && (
+              <span>Date: <strong>{pendingCommitAnalysis.date}</strong></span>
+            )}
+            <span style={{ marginLeft: 'auto', color: 'var(--accent, #6366f1)', fontWeight: 500 }}>
+              Snapshot will be saved and available in Snapshots tab
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Mode Toggle */}
       <div style={styles.modeToggle}>
@@ -350,4 +417,70 @@ const styles = {
     background: isError ? 'var(--red)' : 'var(--blue)',
     flexShrink: 0,
   }),
+  commitBanner: {
+    background: 'var(--bg-elevated)',
+    border: '1px solid var(--border-active, rgba(99, 102, 241, 0.4))',
+    borderRadius: 'var(--radius-md, 8px)',
+    padding: '16px 20px',
+    marginBottom: '22px',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+  },
+  commitBannerTop: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    flexWrap: 'wrap',
+    marginBottom: '8px',
+  },
+  commitBadge: {
+    background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+    color: '#ffffff',
+    fontSize: '11px',
+    fontWeight: 600,
+    letterSpacing: '0.4px',
+    padding: '3px 8px',
+    borderRadius: '4px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '5px',
+  },
+  commitCode: {
+    fontFamily: 'ui-monospace, monospace',
+    fontSize: '12px',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border)',
+    padding: '2px 7px',
+    borderRadius: '4px',
+    color: 'var(--text-primary)',
+    fontWeight: 600,
+  },
+  commitRepoTag: {
+    fontSize: '12px',
+    fontWeight: 500,
+    color: 'var(--text-secondary)',
+  },
+  cancelCommitBtn: {
+    marginLeft: 'auto',
+    background: 'transparent',
+    border: '1px solid var(--border)',
+    color: 'var(--text-muted)',
+    fontSize: '11px',
+    padding: '3px 8px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  },
+  commitMessage: {
+    fontSize: '14px',
+    fontWeight: 600,
+    color: 'var(--text-primary)',
+    marginBottom: '6px',
+  },
+  commitMeta: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    fontSize: '12px',
+    color: 'var(--text-muted)',
+    flexWrap: 'wrap',
+  },
 };

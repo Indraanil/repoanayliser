@@ -149,7 +149,7 @@ export default function WorkflowExplorer({ repoId }) {
           </div>
 
           {/* Filter Pills */}
-          <div style={styles.pillsWrap}>
+          <div className="workflow-pills-wrap" style={styles.pillsWrap}>
             {[
               { id: 'all', label: 'All' },
               { id: 'api_endpoint', label: 'API Routes' },
@@ -624,7 +624,8 @@ const styles = {
   },
   searchWrap: {
     padding: '12px',
-    borderBottom: '1px solid var(--border)'
+    borderBottom: '1px solid var(--border)',
+    flexShrink: 0
   },
   searchInput: {
     width: '100%',
@@ -641,7 +642,10 @@ const styles = {
     gap: '6px',
     padding: '8px 12px',
     borderBottom: '1px solid var(--border)',
-    overflowX: 'auto'
+    overflowX: 'auto',
+    flexShrink: 0,
+    scrollbarWidth: 'none',
+    msOverflowStyle: 'none'
   },
   pillBtn: {
     background: 'transparent',

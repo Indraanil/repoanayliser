@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 from typing import Dict, List
 import uuid
 from src.analysis_engine import AnalysisEngine
+from src.hr.hr_service import HRService
 
 app = FastAPI(title="ARCHITECH API")
 
@@ -23,6 +24,7 @@ app.add_middleware(
 )
 
 engine = AnalysisEngine()
+hr_service = HRService()
 jobs = {}
 
 class AnalysisRequest(BaseModel):
@@ -30,6 +32,11 @@ class AnalysisRequest(BaseModel):
 
 class LocalAnalysisRequest(BaseModel):
     local_path: str
+
+class CommitAnalysisJobRequest(BaseModel):
+    repo_id: str
+    commit_hash: str
+    repo_name: str | None = None
 
 class ImpactRequest(BaseModel):
     file_path: str
@@ -80,6 +87,58 @@ def run_local_analysis(job_id: str, local_path: str):
         print(f"{'='*60}\n")
         jobs[job_id] = {"status": "failed", "error": str(e), "trace": error_trace}
 
+def run_commit_analysis(job_id: str, repo_id: str, commit_hash: str, repo_name: str | None = None):
+    try:
+        repos = []
+        try:
+            repos = engine.version_tracker.list_repositories()
+        except Exception:
+            pass
+        ws_repos = hr_service._get_workspace_repos(repos)
+        target = next((
+            r for r in ws_repos
+            if r.get("repo_id") == repo_id or r.get("name") == repo_id or (repo_name and r.get("name") == repo_name)
+        ), None)
+
+        if not target:
+            sub = hr_service.workspace_dir / (repo_name or repo_id)
+            if sub.exists():
+                target = {"repo_id": repo_id, "name": repo_name or sub.name, "path": str(sub.resolve())}
+            else:
+                target = {"repo_id": repo_id, "name": repo_name or repo_id, "path": str(hr_service.workspace_dir.parent.resolve())}
+
+        repo_path = Path(target["path"])
+
+        if (repo_path / ".git").exists():
+            import subprocess
+            print(f"Checking out commit {commit_hash} in {repo_path}")
+            subprocess.run(
+                ["git", "-C", str(repo_path), "checkout", "-f", commit_hash],
+                capture_output=True, text=True, timeout=30, encoding="utf-8", errors="replace"
+            )
+
+        result = engine.analyze_local_path(str(repo_path))
+
+        if result and result.get("repo_id"):
+            with engine.graph_db.driver.session() as session:
+                session.run("""
+                    MATCH (r:Repository {repo_id: $repo_id})-[:HAS_SNAPSHOT]->(s:Snapshot)
+                    WHERE s.commit_hash = $commit_hash OR s.snapshot_id = $snapshot_id
+                    SET s.commit_hash = $commit_hash,
+                        s.commit_message = COALESCE(s.commit_message, $subject)
+                """, repo_id=result["repo_id"], commit_hash=commit_hash, snapshot_id=engine.current_snapshot_id, subject=target.get("name", ""))
+
+        jobs[job_id] = {
+            "status": "completed",
+            "result": result,
+            "cached": result.get('cached', False)
+        }
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"\n{'='*60}\nERROR IN COMMIT ANALYSIS:\n{error_trace}\n{'='*60}\n")
+        jobs[job_id] = {"status": "failed", "error": str(e), "trace": error_trace}
+
 @app.post("/analyze")
 async def analyze_repository(request: AnalysisRequest, background_tasks: BackgroundTasks):
     job_id = str(uuid.uuid4())
@@ -120,6 +179,15 @@ async def analyze_local(request: LocalAnalysisRequest, background_tasks: Backgro
     jobs[job_id] = {"status": "processing"}
     
     background_tasks.add_task(run_local_analysis, job_id, request.local_path)
+    
+    return {"job_id": job_id, "status": "processing"}
+
+@app.post("/analyze/commit")
+async def analyze_commit_endpoint(request: CommitAnalysisJobRequest, background_tasks: BackgroundTasks):
+    job_id = str(uuid.uuid4())
+    jobs[job_id] = {"status": "processing"}
+    
+    background_tasks.add_task(run_commit_analysis, job_id, request.repo_id, request.commit_hash, request.repo_name)
     
     return {"job_id": job_id, "status": "processing"}
 
@@ -783,6 +851,90 @@ async def simulate_demo_mcp_call():
         latency_ms=lat,
     )
     return {"status": "recorded", "tool": tool_name, "target": target}
+
+
+# ==============================================================================
+# HR Management Endpoints
+# ==============================================================================
+
+class HRLoginRequest(BaseModel):
+    username: str
+    password: str | None = None
+
+class CreatePRNotificationRequest(BaseModel):
+    repo_name: str = "repoanayliser"
+    repo_id: str = "eac55829cf3ea1d6"
+    pr_number: int = 1
+    title: str = "New Pull Request"
+    author: str = "Developer"
+    author_email: str = ""
+    source_branch: str = "feature"
+    target_branch: str = "main"
+    status: str = "open"
+    commit_hash: str = ""
+    description: str = ""
+    changed_files_count: int = 3
+    impact_level: str = "medium"
+
+@app.post("/hr/login")
+async def hr_login(req: HRLoginRequest):
+    """Authenticate HR manager."""
+    return hr_service.authenticate_hr(req.username, req.password)
+
+@app.get("/hr/contributors")
+async def get_hr_contributors():
+    """Get aggregated contributors with multi-project commit statistics."""
+    repos = []
+    try:
+        repos = engine.version_tracker.list_repositories()
+    except Exception:
+        pass
+    return hr_service.get_cross_project_contributors(repos)
+
+@app.get("/hr/contributor/{developer_id:path}/commits")
+async def get_hr_developer_commits_path(developer_id: str, repo: str | None = None):
+    """Fetch complete chronological commits for a specific developer across projects."""
+    repos = []
+    try:
+        repos = engine.version_tracker.list_repositories()
+    except Exception:
+        pass
+    return hr_service.get_developer_commits(developer_id, repos, repo_filter=repo)
+
+@app.get("/hr/developer-commits")
+async def get_hr_developer_commits_query(developer_id: str, repo: str | None = None):
+    """Query parameter variant for developer commits."""
+    repos = []
+    try:
+        repos = engine.version_tracker.list_repositories()
+    except Exception:
+        pass
+    return hr_service.get_developer_commits(developer_id, repos, repo_filter=repo)
+
+@app.get("/hr/commit-analysis/{repo_id}/{commit_hash}")
+async def get_hr_commit_analysis(repo_id: str, commit_hash: str):
+    """Perform deep architectural & diff analysis for an individual commit."""
+    repos = []
+    try:
+        repos = engine.version_tracker.list_repositories()
+    except Exception:
+        pass
+    return hr_service.analyze_commit(repo_id, commit_hash, repos)
+
+@app.get("/hr/notifications")
+async def get_hr_notifications():
+    """Retrieve PR activity notifications and unread badge count."""
+    return hr_service.get_pr_notifications()
+
+@app.post("/hr/notifications/{notification_id}/read")
+async def mark_hr_notification_read(notification_id: str):
+    """Mark a PR notification as read."""
+    return hr_service.mark_notification_read(notification_id)
+
+@app.post("/hr/notifications/pr")
+async def create_hr_pr_notification(req: CreatePRNotificationRequest):
+    """Create or receive a new PR notification."""
+    return hr_service.create_pr_notification(req.dict())
 
 
 if __name__ == "__main__":

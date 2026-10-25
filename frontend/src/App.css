@@ -6,7 +6,7 @@
 /* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* Design Tokens */
+/* Design Tokens — Dark Default */
 :root {
   --bg-primary: #09090b;
   --bg-card: #18181b;
@@ -30,6 +30,9 @@
   --amber-dim: rgba(251, 191, 36, 0.12);
   --blue: #60a5fa;
   --blue-dim: rgba(96, 165, 250, 0.12);
+  --header-bg: rgba(9, 9, 11, 0.85);
+  --nav-bg: rgba(9, 9, 11, 0.6);
+  --hero-gradient: radial-gradient(ellipse 90% 70% at 20% 30%, rgba(14, 116, 144, 0.12), rgba(15, 23, 42, 0.85) 60%, rgba(8, 14, 26, 0.95));
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -39,6 +42,37 @@
   --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
   --shadow-elevated: 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px var(--border);
   --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Design Tokens — Light Theme */
+[data-theme="light"] {
+  --bg-primary: #f8f9fa;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-elevated: #f1f5f9;
+  --bg-input: #ffffff;
+  --border: #e2e8f0;
+  --border-hover: #cbd5e1;
+  --border-active: #94a3b8;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --accent: #0f172a;
+  --accent-glow: rgba(15, 23, 42, 0.05);
+  --green: #16a34a;
+  --green-dim: rgba(22, 163, 74, 0.1);
+  --red: #dc2626;
+  --red-dim: rgba(220, 38, 38, 0.1);
+  --amber: #d97706;
+  --amber-dim: rgba(217, 119, 6, 0.1);
+  --blue: #2563eb;
+  --blue-dim: rgba(37, 99, 235, 0.1);
+  --header-bg: rgba(255, 255, 255, 0.88);
+  --nav-bg: rgba(255, 255, 255, 0.78);
+  --hero-gradient: linear-gradient(135deg, #ffffff 0%, #f0fdf4 35%, #f0f9ff 100%);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--border);
+  --shadow-elevated: 0 10px 25px -5px rgba(0, 0, 0, 0.07), 0 8px 10px -6px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--border);
 }
 
 /* Global Reset */
@@ -61,9 +95,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
   font-size: 14px;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Scrollbar — Dark Minimal */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -85,6 +120,11 @@ body {
 /* Selection */
 ::selection {
   background: rgba(228, 228, 231, 0.15);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(37, 99, 235, 0.15);
   color: var(--text-primary);
 }
 
@@ -113,6 +153,538 @@ input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--border-active) !important;
   box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* ============================================
+   Header Top-Right Meta Items & Separators
+   ============================================ */
+.header-meta-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-nav-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--border-active);
+  opacity: 0.6;
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.header-meta-btn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 4px 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none !important;
+  transition: color 0.15s ease;
+  line-height: 1.4;
+}
+
+.header-meta-btn:hover:not(:disabled) {
+  transform: none !important;
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+}
+
+.header-meta-btn.active {
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  text-decoration: none !important;
+}
+
+.header-meta-label {
+  position: relative;
+  display: inline-block;
+  text-decoration: none !important;
+}
+
+/* Rainbow underline ONLY on hover */
+.header-meta-label::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #ff007f, #7928ca, #0070f3, #00dfd8, #10b981, #facc15, #f97316, #ff007f);
+  background-size: 200% auto;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.header-meta-btn:hover .header-meta-label::after {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: rainbowUnderlineShift 2s linear infinite;
+}
+
+@keyframes rainbowUnderlineShift {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+.header-meta-icon {
+  text-decoration: none !important;
+  display: inline-block;
+}
+
+.header-hr-badge {
+  background: rgba(244, 63, 94, 0.12);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  line-height: 1;
+  text-decoration: none !important;
+  display: inline-block;
+  margin-left: 2px;
+}
+
+[data-theme="light"] .header-hr-badge {
+  background: rgba(225, 29, 72, 0.1);
+  color: #e11d48;
+  border: 1px solid rgba(225, 29, 72, 0.25);
+}
+
+.workflow-pills-wrap {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.workflow-pills-wrap::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* ============================================
+   CodeHealth Modern Redesign
+   ============================================ */
+.codehealth-warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 1.55;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  color: #fde68a;
+  transition: var(--transition);
+}
+
+.codehealth-warning-icon {
+  flex-shrink: 0;
+  color: #fbbf24;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.codehealth-warning-text strong {
+  color: #fff;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+[data-theme="light"] .codehealth-warning-banner {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+[data-theme="light"] .codehealth-warning-icon {
+  color: #d97706;
+}
+
+[data-theme="light"] .codehealth-warning-text strong {
+  color: #78350f;
+}
+
+.codehealth-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.codehealth-metric-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.codehealth-metric-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-elevated);
+}
+
+.codehealth-metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.codehealth-metric-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+}
+
+.codehealth-metric-card.blue .codehealth-metric-badge {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+.codehealth-metric-card.purple .codehealth-metric-badge {
+  background: rgba(168, 85, 247, 0.12);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+.codehealth-metric-card.rose .codehealth-metric-badge {
+  background: rgba(244, 63, 94, 0.12);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+.codehealth-metric-card.amber .codehealth-metric-badge {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+[data-theme="light"] .codehealth-metric-card.blue .codehealth-metric-badge {
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+  border-color: rgba(37, 99, 235, 0.25);
+}
+[data-theme="light"] .codehealth-metric-card.purple .codehealth-metric-badge {
+  background: rgba(147, 51, 234, 0.1);
+  color: #7e22ce;
+  border-color: rgba(147, 51, 234, 0.25);
+}
+[data-theme="light"] .codehealth-metric-card.rose .codehealth-metric-badge {
+  background: rgba(225, 29, 72, 0.1);
+  color: #be123c;
+  border-color: rgba(225, 29, 72, 0.25);
+}
+[data-theme="light"] .codehealth-metric-card.amber .codehealth-metric-badge {
+  background: rgba(217, 119, 6, 0.1);
+  color: #b45309;
+  border-color: rgba(217, 119, 6, 0.25);
+}
+
+.codehealth-metric-val {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.codehealth-metric-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.codehealth-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 320px;
+  max-width: 45%;
+}
+
+.codehealth-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.codehealth-search-input {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+
+.codehealth-search-input:focus {
+  border-color: var(--border-active);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.codehealth-path {
+  color: #818cf8;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-theme="light"] .codehealth-path {
+  color: #4f46e5;
+}
+
+/* ============================================
+   Analysis Snapshots — Streamlined Modern Look
+   ============================================ */
+.snapshot-stream-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.snapshot-stream-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.snapshot-stream-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-elevated);
+}
+
+.snapshot-card-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.snapshot-card-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.snapshot-tag-index {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  padding: 2px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.snapshot-tag-commit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .snapshot-tag-commit {
+  background: rgba(2, 132, 199, 0.1);
+  color: #0284c7;
+  border-color: rgba(2, 132, 199, 0.28);
+}
+
+.snapshot-tag-uncommitted {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  background: var(--bg-elevated);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-style: italic;
+  flex-shrink: 0;
+}
+
+.snapshot-inline-msg {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 580px;
+}
+
+.snapshot-card-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.snapshot-timestamp {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.snapshot-del-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.snapshot-del-btn:hover {
+  background: var(--red-dim);
+  border-color: rgba(248, 113, 113, 0.25);
+  color: var(--red);
+}
+
+.snapshot-card-row-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.snapshot-metrics-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.snapshot-stat-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.snapshot-stat-val {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.snapshot-stat-dot {
+  color: var(--text-dim);
+}
+
+.snapshot-stat-warn {
+  color: var(--amber);
+}
+
+.snapshot-stat-warn .snapshot-stat-val {
+  color: var(--amber);
+}
+
+.snapshot-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.snapshot-action-btn {
+  padding: 6px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.snapshot-action-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.snapshot-action-btn.active-s1 {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+[data-theme="light"] .snapshot-action-btn.active-s1 {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.4);
+  color: #1d4ed8;
+}
+
+.snapshot-action-btn.active-s2 {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+  font-weight: 600;
+}
+
+[data-theme="light"] .snapshot-action-btn.active-s2 {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #059669;
 }
 
 /* ============================================

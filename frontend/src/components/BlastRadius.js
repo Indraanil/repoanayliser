@@ -65,16 +65,25 @@ export default function BlastRadius({ repoId }) {
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const linkColor = isLight ? '#cbd5e1' : '#3f3f46';
+    const labelColor = isLight ? '#0f172a' : '#a1a1aa';
+    const nodeStroke = isLight ? '#cbd5e1' : '#27272a';
+
     svg.append('g').selectAll('line').data(links).enter().append('line')
-      .attr('stroke', '#3f3f46').attr('stroke-width', 1.5);
+      .attr('stroke', linkColor).attr('stroke-width', 1.5);
 
     const node = svg.append('g').selectAll('circle').data(nodes).enter().append('circle')
       .attr('r', d => d.type === 'target' ? 11 : 7)
       .attr('fill', d => d.type === 'target' ? '#f87171' : d.type === 'direct' ? '#fbbf24' : '#71717a')
-      .attr('stroke', '#27272a').attr('stroke-width', 1);
+      .attr('stroke', nodeStroke).attr('stroke-width', 1);
 
     const label = svg.append('g').selectAll('text').data(nodes).enter().append('text')
-      .text(d => d.label).attr('font-size', 10).attr('fill', '#a1a1aa')
+      .text(d => d.label).attr('font-size', 10).attr('fill', labelColor)
+      .attr('stroke', isLight ? '#ffffff' : '#09090b')
+      .attr('stroke-width', 2.5)
+      .attr('stroke-linejoin', 'round')
+      .attr('paint-order', 'stroke fill')
       .attr('font-family', 'Inter, sans-serif').attr('dx', 12).attr('dy', 4);
 
     simulation.on('tick', () => {

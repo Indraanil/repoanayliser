@@ -12,8 +12,9 @@ import SnapshotComparison from './components/SnapshotComparison';
 import BlastRadius from './components/BlastRadius';
 import CodeHealth from './components/CodeHealth';
 import WorkflowExplorer from './components/WorkflowExplorer';
-import CinematicStory from './components/cinematic/CinematicStory';
 import ChatAssistant from './components/ChatAssistant';
+import HRPortal from './components/HRPortal';
+import { api } from './services/api';
 
 const repositoryLabel = (result, source) => {
   const explicit = result?.repo_name || result?.repository_name || result?.name;
@@ -25,19 +26,69 @@ const repositoryLabel = (result, source) => {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState('story');
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('architech_theme');
+    if (saved) return saved;
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      return 'light';
+    }
+    return 'dark';
+  });
+  const [activeTab, setActiveTab] = useState('analyze');
+  const [previousTab, setPreviousTab] = useState('analyze');
   const [refreshKey, setRefreshKey] = useState(0);
   const [displayText, setDisplayText] = useState('');
   const [currentRepoId, setCurrentRepoId] = useState('eac55829cf3ea1d6');
   const [currentRepoName, setCurrentRepoName] = useState('repoanayliser');
+  const [hrUnreadPRs, setHrUnreadPRs] = useState(0);
+  const [pendingCommitAnalysis, setPendingCommitAnalysis] = useState(null);
 
-  const handleAnalysisComplete = (result, source) => {
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('architech_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  const toggleHRPortal = () => {
+    setActiveTab(prev => {
+      if (prev === 'hr') {
+        return previousTab || 'analyze';
+      }
+      setPreviousTab(prev);
+      return 'hr';
+    });
+  };
+
+  const handleTabChange = (tabId) => {
+    if (activeTab !== 'hr') {
+      setPreviousTab(activeTab);
+    }
+    setActiveTab(tabId);
+  };
+
+  const handleAnalysisComplete = (result, source, wasCommitAnalysis = false) => {
     setRefreshKey(prev => prev + 1);
     if (result?.repo_id) {
       setCurrentRepoId(result.repo_id);
       setCurrentRepoName(repositoryLabel(result, source));
     }
-    setActiveTab('patterns');
+    // Route directly to snapshots if analyzing a commit snapshot, or patterns for full repo
+    setActiveTab(wasCommitAnalysis ? 'snapshots' : 'patterns');
+  };
+
+  const handleAnalyzeCommit = (commitData) => {
+    setPendingCommitAnalysis(commitData);
+    if (commitData?.repo_id) {
+      setCurrentRepoId(commitData.repo_id);
+    }
+    if (commitData?.repo_name) {
+      setCurrentRepoName(commitData.repo_name);
+    }
+    setPreviousTab('hr');
+    setActiveTab('analyze');
   };
 
   const handleRepoSelect = (repo) => {
@@ -53,6 +104,23 @@ function App() {
       setRefreshKey(prev => prev + 1);
     }
   };
+
+  // Poll PR notifications count for global header badge
+  useEffect(() => {
+    const checkPRNotifications = async () => {
+      try {
+        const res = await api.getHrNotifications();
+        if (res.data?.unread_count !== undefined) {
+          setHrUnreadPRs(res.data.unread_count);
+        }
+      } catch {
+        // quiet ignore
+      }
+    };
+    checkPRNotifications();
+    const interval = setInterval(checkPRNotifications, 12000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const finalText = 'ARCHITECH';
@@ -83,7 +151,7 @@ function App() {
   }, []);
 
   const tabs = [
-    { id: 'story', label: 'Story Experience', icon: '▶' },
+    { id: 'analyze', label: 'Analyze', icon: '◈' },
     { id: 'workflows', label: 'Workflows', icon: '⇄' },
     { id: 'architecture', label: 'Architecture', icon: '△' },
     { id: 'graph', label: 'File Graph', icon: '⬢' },
@@ -94,7 +162,6 @@ function App() {
     { id: 'health', label: 'Unused', icon: '○' },
     { id: 'function-graph', label: 'Fn Graph', icon: '⬣' },
     { id: 'repositories', label: 'Repos', icon: '▦' },
-    { id: 'analyze', label: 'Analyze', icon: '◈' },
     { id: 'snapshots', label: 'Snapshots', icon: '❐' }
   ];
 
@@ -107,12 +174,52 @@ function App() {
             <h1 style={styles.title}>{displayText}</h1>
             <p style={styles.subtitle}>Architectural Recovery & Semantic Synthesis</p>
           </div>
-          {currentRepoName && (
-            <div style={styles.repoIndicator}>
-              <span style={styles.repoDot}></span>
-              {currentRepoName}
-            </div>
-          )}
+          <div className="header-meta-group">
+            {currentRepoName && (
+              <button
+                className={`header-meta-btn ${activeTab === 'repositories' ? 'active' : ''}`}
+                onClick={() => handleTabChange('repositories')}
+                title="View Repositories"
+              >
+                <span style={styles.repoDot}></span>
+                <span className="header-meta-label">{currentRepoName}</span>
+              </button>
+            )}
+
+            {currentRepoName && <div className="header-nav-divider" />}
+
+            <button
+              className={`header-meta-btn ${activeTab === 'hr' ? 'active' : ''}`}
+              onClick={toggleHRPortal}
+              title={activeTab === 'hr' ? "Exit HR Activity Portal" : "Open HR & Engineering Activity Portal"}
+            >
+              <span className="header-meta-icon" style={{ color: 'var(--text-muted)' }}>👤</span>
+              <span className="header-meta-label">HR Activity</span>
+              {hrUnreadPRs > 0 && (
+                <span className="header-hr-badge">
+                  {hrUnreadPRs}
+                </span>
+              )}
+            </button>
+
+            <div className="header-nav-divider" />
+
+            {/* Light / Dark Mode Toggle */}
+            <button
+              id="theme-toggle-btn"
+              className="header-meta-btn"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              aria-label="Toggle light or dark mode"
+            >
+              <span className="header-meta-icon" style={{ fontSize: '13px', lineHeight: 1 }}>
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </span>
+              <span className="header-meta-label">
+                {theme === 'dark' ? 'Light' : 'Dark'}
+              </span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -122,14 +229,29 @@ function App() {
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               style={{
                 ...styles.tab,
-                ...(activeTab === tab.id ? styles.activeTab : {})
+                ...(activeTab === tab.id ? styles.activeTab : {}),
+                position: 'relative'
               }}
             >
               <span style={styles.tabIcon}>{tab.icon}</span>
               {tab.label}
+              {tab.badge > 0 && (
+                <span style={{
+                  background: 'rgba(244, 63, 94, 0.15)',
+                  color: '#fda4af',
+                  border: '1px solid rgba(244, 63, 94, 0.3)',
+                  fontSize: '9px',
+                  fontWeight: 600,
+                  padding: '1px 5px',
+                  borderRadius: '9999px',
+                  marginLeft: '6px'
+                }}>
+                  {tab.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -137,15 +259,29 @@ function App() {
 
       {/* Main Content */}
       <main style={styles.main}>
-        <div className="fade-in" key={activeTab + refreshKey}>
-          {activeTab === 'story' && (
-            <CinematicStory
-              repoId={currentRepoId || 'eac55829cf3ea1d6'}
-              onSelectTab={(tabId) => setActiveTab(tabId)}
-              onExitToApp={() => setActiveTab('graph')}
+        <div className="fade-in" key={activeTab + refreshKey + theme}>
+          {activeTab === 'hr' && (
+            <HRPortal
+              key={refreshKey}
+              onSelectRepo={handleRepoSelect}
+              onSelectTab={(tabId) => {
+                setPreviousTab('analyze');
+                setActiveTab(tabId);
+              }}
+              onAnalyzeCommit={handleAnalyzeCommit}
             />
           )}
-          {activeTab === 'analyze' && <AnalyzeRepo onAnalysisComplete={handleAnalysisComplete} />}
+          {activeTab === 'analyze' && (
+            <AnalyzeRepo
+              onAnalysisComplete={(result, source) => {
+                const wasCommit = !!pendingCommitAnalysis;
+                setPendingCommitAnalysis(null);
+                handleAnalysisComplete(result, source, wasCommit);
+              }}
+              pendingCommitAnalysis={pendingCommitAnalysis}
+              onClearPendingCommit={() => setPendingCommitAnalysis(null)}
+            />
+          )}
           {activeTab === 'repositories' && (
             <RepositoryManager
               key={refreshKey}
@@ -159,9 +295,9 @@ function App() {
           {activeTab === 'functions' && <FunctionAnalysis key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'workflows' && <WorkflowExplorer key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'health' && <CodeHealth key={refreshKey} repoId={currentRepoId} />}
-          {activeTab === 'architecture' && <ArchitectureView key={refreshKey} repoId={currentRepoId} />}
-          {activeTab === 'graph' && <DependencyGraph key={refreshKey} repoId={currentRepoId} />}
-          {activeTab === 'function-graph' && <FunctionGraph key={refreshKey} repoId={currentRepoId} />}
+          {activeTab === 'architecture' && <ArchitectureView key={refreshKey} repoId={currentRepoId} theme={theme} />}
+          {activeTab === 'graph' && <DependencyGraph key={refreshKey} repoId={currentRepoId} theme={theme} />}
+          {activeTab === 'function-graph' && <FunctionGraph key={refreshKey} repoId={currentRepoId} theme={theme} />}
           {activeTab === 'snapshots' && currentRepoId && <SnapshotComparison key={refreshKey} repoId={currentRepoId} />}
           {activeTab === 'snapshots' && !currentRepoId && (
             <div style={styles.emptyState}>
@@ -192,10 +328,11 @@ const styles = {
   header: {
     borderBottom: '1px solid var(--border)',
     backdropFilter: 'blur(12px)',
-    background: 'rgba(9, 9, 11, 0.85)',
+    background: 'var(--header-bg)',
     position: 'sticky',
     top: 0,
     zIndex: 50,
+    transition: 'background-color 0.25s ease, border-color 0.25s ease',
   },
   headerInner: {
     maxWidth: '1400px',
@@ -242,11 +379,12 @@ const styles = {
   },
   nav: {
     borderBottom: '1px solid var(--border)',
-    background: 'rgba(9, 9, 11, 0.6)',
+    background: 'var(--nav-bg)',
     backdropFilter: 'blur(8px)',
     position: 'sticky',
     top: '72px',
     zIndex: 40,
+    transition: 'background-color 0.25s ease, border-color 0.25s ease',
   },
   navInner: {
     maxWidth: '1400px',

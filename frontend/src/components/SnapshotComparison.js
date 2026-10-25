@@ -50,64 +50,78 @@ function SnapshotComparison({ repoId }) {
     <div style={styles.container}>
       <h3>📸 Analysis Snapshots</h3>
 
-      <div style={styles.snapshotList}>
+      <div className="snapshot-stream-list">
         {snapshots.map((snapshot, idx) => (
-          <div key={snapshot.snapshot_id} style={styles.snapshotCard}>
-            <div style={styles.snapshotHeader}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={styles.snapshotNumber}>#{snapshots.length - idx}</span>
+          <div key={snapshot.snapshot_id} className="snapshot-stream-card">
+            {/* Top row: Identity & Metadata */}
+            <div className="snapshot-card-row-top">
+              <div className="snapshot-card-identity">
+                <span className="snapshot-tag-index">#{snapshots.length - idx}</span>
                 {snapshot.commit_hash ? (
-                  <span style={styles.commitBadge} title={snapshot.commit_hash}>
-                    <span style={{ opacity: 0.6 }}>⎇</span> {snapshot.commit_hash.slice(0, 7)}
+                  <span className="snapshot-tag-commit" title={snapshot.commit_hash}>
+                    <span style={{ opacity: 0.7 }}>⎇</span> {snapshot.commit_hash.slice(0, 7)}
                   </span>
                 ) : (
-                  <span style={styles.uncommittedBadge}>Working Tree</span>
+                  <span className="snapshot-tag-uncommitted">Working Tree</span>
+                )}
+                {snapshot.commit_message && (
+                  <span className="snapshot-inline-msg" title={snapshot.commit_message}>
+                    {snapshot.commit_message}
+                  </span>
                 )}
               </div>
-              <span style={styles.snapshotDate}>
-                {new Date(snapshot.created_at).toLocaleString()}
-              </span>
+
+              <div className="snapshot-card-meta-right">
+                <span className="snapshot-timestamp">
+                  {new Date(snapshot.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                </span>
+                <button
+                  onClick={() => deleteSnapshot(snapshot.snapshot_id)}
+                  className="snapshot-del-btn"
+                  title="Delete snapshot"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </div>
             </div>
 
-            {snapshot.commit_message && (
-              <div style={styles.commitMessageBox}>
-                <span style={styles.commitMessageIcon}>💬</span>
-                <span style={styles.commitMessageText}>{snapshot.commit_message}</span>
+            {/* Bottom row: Inline Stats Ribbon & Action Selectors */}
+            <div className="snapshot-card-row-bottom">
+              <div className="snapshot-metrics-ribbon">
+                <span className="snapshot-stat-item">
+                  <span className="snapshot-stat-val">{snapshot.total_files || snapshot.file_count}</span> files
+                </span>
+                <span className="snapshot-stat-dot">·</span>
+                <span className="snapshot-stat-item">
+                  <span className="snapshot-stat-val">{snapshot.total_deps || 0}</span> deps
+                </span>
+                <span className="snapshot-stat-dot">·</span>
+                <span className="snapshot-stat-item">
+                  <span className="snapshot-stat-val">{snapshot.avg_coupling?.toFixed(2) || 'N/A'}</span> avg coupling
+                </span>
+                <span className="snapshot-stat-dot">·</span>
+                <span className={`snapshot-stat-item ${snapshot.cycle_count > 0 ? 'snapshot-stat-warn' : ''}`}>
+                  <span className="snapshot-stat-val">{snapshot.cycle_count || 0}</span> cycles
+                </span>
               </div>
-            )}
-            <div style={styles.snapshotMetrics}>
-              <div style={styles.metric}>
-                <span>Files:</span> <strong>{snapshot.total_files || snapshot.file_count}</strong>
+
+              <div className="snapshot-btn-group">
+                <button
+                  onClick={() => setSelectedSnapshot1(snapshot.snapshot_id)}
+                  className={`snapshot-action-btn ${selectedSnapshot1 === snapshot.snapshot_id ? 'active-s1' : ''}`}
+                >
+                  {selectedSnapshot1 === snapshot.snapshot_id ? '✓ Base (Snap 1)' : 'Set as Base'}
+                </button>
+                <button
+                  onClick={() => setSelectedSnapshot2(snapshot.snapshot_id)}
+                  className={`snapshot-action-btn ${selectedSnapshot2 === snapshot.snapshot_id ? 'active-s2' : ''}`}
+                >
+                  {selectedSnapshot2 === snapshot.snapshot_id ? '✓ Target (Snap 2)' : 'Set as Target'}
+                </button>
               </div>
-              <div style={styles.metric}>
-                <span>Deps:</span> <strong>{snapshot.total_deps || 0}</strong>
-              </div>
-              <div style={styles.metric}>
-                <span>Coupling:</span> <strong>{snapshot.avg_coupling?.toFixed(2) || 'N/A'}</strong>
-              </div>
-              <div style={styles.metric}>
-                <span>Cycles:</span> <strong>{snapshot.cycle_count || 0}</strong>
-              </div>
-            </div>
-            <div style={styles.snapshotActions}>
-              <button
-                onClick={() => setSelectedSnapshot1(snapshot.snapshot_id)}
-                style={{ ...styles.selectBtn, ...(selectedSnapshot1 === snapshot.snapshot_id ? styles.selected : {}) }}
-              >
-                {selectedSnapshot1 === snapshot.snapshot_id ? '✓ Snapshot 1' : 'Select as 1'}
-              </button>
-              <button
-                onClick={() => setSelectedSnapshot2(snapshot.snapshot_id)}
-                style={{ ...styles.selectBtn, ...(selectedSnapshot2 === snapshot.snapshot_id ? styles.selected : {}) }}
-              >
-                {selectedSnapshot2 === snapshot.snapshot_id ? '✓ Snapshot 2' : 'Select as 2'}
-              </button>
-              <button
-                onClick={() => deleteSnapshot(snapshot.snapshot_id)}
-                style={styles.deleteBtn}
-              >
-                Del
-              </button>
             </div>
           </div>
         ))}
