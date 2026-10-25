@@ -156,7 +156,7 @@ export default function FunctionGraph({ repoId, theme }) {
       .attr('font-family', 'Inter, sans-serif')
       .attr('font-weight', d => d.type === 'function' ? '600' : '400')
       .attr('fill', d => d.type === 'function' ? labelFnColor : labelFileColor)
-      .attr('stroke', isLight ? '#ffffff' : '#09090b')
+      .attr('stroke', isLight ? '#fafaf7' : '#09090b')
       .attr('stroke-width', 2.5)
       .attr('stroke-linejoin', 'round')
       .attr('paint-order', 'stroke fill')
@@ -191,7 +191,7 @@ export default function FunctionGraph({ repoId, theme }) {
       labels.transition().duration(300)
         .attr('fill', d => d.type === 'function' ? labelFnColor : labelFileColor)
         .attr('opacity', 1)
-        .attr('stroke', isLight ? '#ffffff' : '#09090b')
+        .attr('stroke', isLight ? '#fafaf7' : '#09090b')
         .attr('font-weight', d => d.type === 'function' ? '600' : '400');
     };
 
@@ -237,7 +237,7 @@ export default function FunctionGraph({ repoId, theme }) {
           }
           return isLight ? '#94a3b8' : '#71717a';
         })
-        .attr('stroke', isLight ? '#ffffff' : '#09090b')
+        .attr('stroke', isLight ? '#fafaf7' : '#09090b')
         .attr('stroke-width', 2.5)
         .attr('stroke-linejoin', 'round')
         .attr('paint-order', 'stroke fill')

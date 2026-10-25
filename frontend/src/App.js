@@ -345,7 +345,7 @@ const styles = {
   headerLeft: {},
   title: {
     margin: 0,
-    fontSize: '28px',
+    fontSize: '35px',
     fontFamily: 'var(--font-mono)',
     fontWeight: 600,
     letterSpacing: '4px',

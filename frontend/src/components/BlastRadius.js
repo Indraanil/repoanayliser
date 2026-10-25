@@ -80,7 +80,7 @@ export default function BlastRadius({ repoId }) {
 
     const label = svg.append('g').selectAll('text').data(nodes).enter().append('text')
       .text(d => d.label).attr('font-size', 10).attr('fill', labelColor)
-      .attr('stroke', isLight ? '#ffffff' : '#09090b')
+      .attr('stroke', isLight ? '#fafaf7' : '#09090b')
       .attr('stroke-width', 2.5)
       .attr('stroke-linejoin', 'round')
       .attr('paint-order', 'stroke fill')

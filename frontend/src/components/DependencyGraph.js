@@ -99,7 +99,7 @@ export default function DependencyGraph({ repoId, theme }) {
       .attr('font-size', 10)
       .attr('font-family', 'Inter, sans-serif')
       .attr('fill', labelColor)
-      .attr('stroke', isLight ? '#ffffff' : '#09090b')
+      .attr('stroke', isLight ? '#fafaf7' : '#09090b')
       .attr('stroke-width', 2.5)
       .attr('stroke-linejoin', 'round')
       .attr('paint-order', 'stroke fill')
@@ -134,7 +134,7 @@ export default function DependencyGraph({ repoId, theme }) {
       labels.transition().duration(300)
         .attr('fill', labelColor)
         .attr('opacity', 1)
-        .attr('stroke', isLight ? '#ffffff' : '#09090b')
+        .attr('stroke', isLight ? '#fafaf7' : '#09090b')
         .attr('font-weight', '400');
     };
 
@@ -175,7 +175,7 @@ export default function DependencyGraph({ repoId, theme }) {
           if (connectedIds.has(n.id)) return isLight ? '#0f172a' : '#e4e4e7';
           return isLight ? '#94a3b8' : '#71717a';
         })
-        .attr('stroke', isLight ? '#ffffff' : '#09090b')
+        .attr('stroke', isLight ? '#fafaf7' : '#09090b')
         .attr('stroke-width', 2.5)
         .attr('stroke-linejoin', 'round')
         .attr('paint-order', 'stroke fill')
